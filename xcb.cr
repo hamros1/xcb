@@ -2,7 +2,6 @@
 lib LibXCB
 	alias Atom = UInt32
 	type Visualid = Void*
-	type Visualtype = Void*
 	alias Window = UInt32
 	alias GContext = UInt32
 	alias Drawable = UInt32
@@ -156,6 +155,8 @@ lib LibXCB
 	fun xcb_parse_display(x0 : Pointer(Char), x1 : Pointer(Char*), x2 : Pointer(Int32), x3 : Pointer(Int32)) : Int32 
 
 	fun xcb_connect(x0 : Pointer(Char), x1 : Pointer(Int32)) : Pointer(Connection)
+
+	fun xcb_generate_id(x0 : Pointer(Connection)) : UInt32 
 
 	fun xcb_connect_to_display_with_auth_info(x0 : Pointer(Char), x1 : Pointer(AuthInfo), x2 : Pointer(Int32)) : Pointer(Connection)
 end
