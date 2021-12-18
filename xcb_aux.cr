@@ -1,4 +1,4 @@
-@[Link("XCB")]
+@[Link("xcb")]
 lib LibXCB
 	fun xcb_aux_get_depth(x0 : Pointer(Connection), x1 : Pointer(Screen)) : UInt8
 
@@ -97,9 +97,9 @@ lib LibXCB
 
 	fun xcb_aux_change_keyboard_control(x0 : Pointer(Connection), x1 : UInt32, x2 : Pointer(ParamsKeyboard)) : VoidCookie
 
-	fun xcb_aux_parse_color(x0 : Pointer(Char), x1 : Pointer(UInt16), x2 : Pointer(UInt16), Pointer(UInt16)) : Int32
+	fun xcb_aux_parse_color(x0 : Pointer(Char), x1 : Pointer(UInt16), x2 : Pointer(UInt16), x3 : Pointer(UInt16)) : Int32
 
-	fun xcb_aux_set_line_attributes_checked (PoInt32er(Connection), GContext, UInt16, Int32, Int32, Int32) :  VoidCookie
+	fun xcb_aux_set_line_attributes_checked (Pointer(Connection), GContext, UInt16, Int32, Int32, Int32) :  VoidCookie
 
 	fun xcb_aux_clear_window(x0 : Pointer(Connection), x1 : Window) : VoidCookie
 end

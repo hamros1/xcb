@@ -1,4 +1,4 @@
-@[Link("XCB")]
+@[Link("xcb")]
 lib LibXCB
 	struct IcccmGetTextPropertyReply
 		_reply : Pointer(GetPropertyReply)
@@ -16,9 +16,9 @@ lib LibXCB
 
 	fun xcb_icccm_get_text_property_reply_wipe(Pointer(IcccmGetTextPropertyReply)) : Void 
 
-	fun xcb_icccm_set_wm_name_checked(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_name_checked(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : VoidCookie
 
-	fun xcb_icccm_set_wm_name(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_name(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : VoidCookie
 
 	fun xcb_icccm_get_wm_name(Pointer(Connection), Window) : GetPropertyCookie 
 
@@ -27,9 +27,9 @@ lib LibXCB
 
 	fun xcb_icccm_get_wm_name_reply(Pointer(Connection), GetPropertyCookie, Pointer(IcccmGetTextPropertyReply), Pointer(GenericError*)) : UInt8 
 
-	fun xcb_icccm_set_wm_icon_name_checked(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_icon_name_checked(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : VoidCookie 
 
-	fun xcb_icccm_set_wm_icon_name(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_icon_name(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : VoidCookie 
 
 	fun xcb_icccm_get_wm_icon_name(Pointer(Connection), Window) : GetPropertyCookie 
 
@@ -37,9 +37,9 @@ lib LibXCB
 
 	fun xcb_icccm_get_wm_icon_name_reply(Pointer(Connection), GetPropertyCookie, Pointer(IcccmGetTextPropertyReply), Pointer(GenericError*)) : UInt8 
 
-	fun xcb_icccm_set_wm_colormap_windows_checked(Pointer(Connection), Window, Atom, UInt32, Pointer(Window)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_colormap_windows_checked(Pointer(Connection), Window, Atom, UInt32, Pointer(Window)) : VoidCookie 
 
-	fun xcb_icccm_set_wm_colormap_windows(Pointer(Connection), Window, Atom, UInt32, Poiner(Window)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_colormap_windows(Pointer(Connection), Window, Atom, UInt32, Pointer(Window)) : VoidCookie 
 
 	struct IcccmGetWMColormapWindowsReply
 		windows_len : UInt32 
@@ -57,10 +57,9 @@ lib LibXCB
 
 	fun xcb_icccm_get_wm_colormap_windows_reply_wipe(Pointer(IcccmGetWMColormapWindowsReply)) : Void 
 
+	fun xcb_icccm_set_wm_client_machine_checked(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : VoidCookie 
 
-	fun xcb_icccm_set_wm_client_machine_checked(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(name)) : xcb_Void_cookie_t 
-
-	fun xcb_icccm_set_wm_client_machine(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_client_machine(Pointer(Connection), Window, Atom, UInt8, UInt32, Pointer(Char)) : VoidCookie 
 
 
 	fun xcb_icccm_get_wm_client_machine(Pointer(Connection), Window) : GetPropertyCookie 
@@ -71,15 +70,15 @@ lib LibXCB
 	fun xcb_icccm_get_wm_client_machine_reply(Pointer(Connection), GetPropertyCookie, Pointer(IcccmGetTextPropertyReply), Pointer(GenericError*)) : UInt8 
 
 
-	fun cxcb_icccm_set_wm_class_checked(Pointer(Connection), Window, UInt32, Pointer(Char)) : xcb_Void_cookie_t 
+	fun cxcb_icccm_set_wm_class_checked(Pointer(Connection), Window, UInt32, Pointer(Char)) : VoidCookie 
 
 
-	fun xcb_icccm_set_wm_class(Pointer(Connection), Window, UInt32, Pointer(Char)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_class(Pointer(Connection), Window, UInt32, Pointer(Char)) : VoidCookie 
 
 	struct IcccmGetWMClassReply
 		instance_name : Pointer(Char)
 		class_name : Pointer(Char)
-		*_reply : GetPropertyReply 
+		_reply : GetPropertyReply 
 	end
 
 	fun xcb_icccm_get_wm_class(Pointer(Connection), Window) : GetPropertyCookie 
@@ -92,9 +91,9 @@ lib LibXCB
 
 	fun xcb_icccm_get_wm_class_reply_wipe(Pointer(IcccmGetWMClassReply)) : Void 
 
-	fun xcb_icccm_set_wm_transient_for_checked(Pointer(Connection), Window, Window) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_transient_for_checked(Pointer(Connection), Window, Window) : VoidCookie 
 
-	fun xcb_icccm_set_wm_transient_for(Pointer(Connection), Window, Window) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_transient_for(Pointer(Connection), Window, Window) : VoidCookie 
 
 
 	fun xcb_icccm_get_wm_transient_for(Pointer(Connection), Window) : GetPropertyCookie 
@@ -103,17 +102,17 @@ lib LibXCB
 
 	fun xcb_icccm_get_wm_transient_for_from_reply(Pointer(Window), Pointer(GetPropertyReply)) : UInt8
 
-	xcb_icccm_get_wm_transient_for_reply(Pointer(Connection), GetPropertyCookie, Pointer(Window), Pointer(GenericError)) : UInt8 
+	fun xcb_icccm_get_wm_transient_for_reply(Pointer(Connection), GetPropertyCookie, Pointer(Window), Pointer(GenericError)) : UInt8 
 
-	XCB_ICCCM_SIZE_HINT_US_POSITION = 1 << 0,
-		XCB_ICCCM_SIZE_HINT_US_SIZE = 1 << 1,
-		XCB_ICCCM_SIZE_HINT_P_POSITION = 1 << 2,
-		XCB_ICCCM_SIZE_HINT_P_SIZE = 1 << 3,
-		XCB_ICCCM_SIZE_HINT_P_MIN_SIZE = 1 << 4,
-		XCB_ICCCM_SIZE_HINT_P_MAX_SIZE = 1 << 5,
-		XCB_ICCCM_SIZE_HINT_P_RESIZE_INC = 1 << 6,
-		XCB_ICCCM_SIZE_HINT_P_ASPECT = 1 << 7,
-		XCB_ICCCM_SIZE_HINT_BASE_SIZE = 1 << 8,
+	XCB_ICCCM_SIZE_HINT_US_POSITION = 1 << 0
+		XCB_ICCCM_SIZE_HINT_US_SIZE = 1 << 1
+		XCB_ICCCM_SIZE_HINT_P_POSITION = 1 << 2
+		XCB_ICCCM_SIZE_HINT_P_SIZE = 1 << 3
+		XCB_ICCCM_SIZE_HINT_P_MIN_SIZE = 1 << 4
+		XCB_ICCCM_SIZE_HINT_P_MAX_SIZE = 1 << 5
+		XCB_ICCCM_SIZE_HINT_P_RESIZE_INC = 1 << 6
+		XCB_ICCCM_SIZE_HINT_P_ASPECT = 1 << 7
+		XCB_ICCCM_SIZE_HINT_BASE_SIZE = 1 << 8
 		XCB_ICCCM_SIZE_HINT_P_WIN_GRAVITY = 1 << 9
 
 	struct SizeHints
@@ -147,9 +146,9 @@ lib LibXCB
 
 	fun xcb_icccm_size_hints_set_win_gravity(Pointer(SizeHints), Gravity) : Void 
 
-	fun xcb_icccm_set_wm_size_hints_checked(Pointer(Connection), Window, Atom, Pointer(SizeHints)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_size_hints_checked(Pointer(Connection), Window, Atom, Pointer(SizeHints)) : VoidCookie 
 
-	fun xcb_icccm_set_wm_size_hints(Pointer(Connection), Window, Atom, Pointer(SizeHints)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_size_hints(Pointer(Connection), Window, Atom, Pointer(SizeHints)) : VoidCookie 
 
 	fun xcb_icccm_get_wm_size_hints(Pointer(Connection), Window, Atom) : GetPropertyCookie 
 
@@ -157,9 +156,9 @@ lib LibXCB
 
 	fun xcb_icccm_get_wm_size_hints_reply(Pointer(Connection), GetPropertyCookie, Pointer(SizeHints), Pointer(GenericError*)) : UInt8 
 
-	fun xcb_icccm_set_wm_normal_hints_checked(Pointer(Connection), Window, Pointer(SizeHints)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_normal_hints_checked(Pointer(Connection), Window, Pointer(SizeHints)) : VoidCookie 
 
-	fun xcb_icccm_set_wm_normal_hints(Pointer(Connection), Window, Pointer(SizeHints)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_normal_hints(Pointer(Connection), Window, Pointer(SizeHints)) : VoidCookie 
 
 	fun xcb_icccm_get_wm_normal_hints(Pointer(Connection), Window) : GetPropertyCookie 
 
@@ -173,14 +172,14 @@ lib LibXCB
 		flags : Int32 
 		input : UInt32 
 		initial_state : Int32 
-		icon_pixmap : xcb_pixmap_t 
+		icon_pixmap : Pixmap
 		icon_window : Window 
 		icon_x, icon_y : Int32 
-		icon_mask : xcb_pixmap_t 
+		icon_mask : Pixmap
 		window_group : Window 
 	end 
 
-	XCB_ICCCM_NUM_WM_HINTS_ELEMENTS 9
+	XCB_ICCCM_NUM_WM_HINTS_ELEMENTS = 9
 
 	XCB_ICCCM_WM_STATE_WITHDRAWN = 0
 	XCB_ICCCM_WM_STATE_NORMAL = 1
@@ -219,9 +218,9 @@ lib LibXCB
 
 	fun xcb_icccm_wm_hints_set_urgency(Pointer(IcccmWMHints)) : Void 
 
-	fun xcb_icccm_set_wm_hints_checked(Pointer(Connection), Window, Pointer(IcccmWMHints)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_hints_checked(Pointer(Connection), Window, Pointer(IcccmWMHints)) : VoidCookie 
 
-	fun xcb_icccm_set_wm_hints(Pointer(Connection), Window, Pointer(IcccmWMHints)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_hints(Pointer(Connection), Window, Pointer(IcccmWMHints)) : VoidCookie 
 
 	fun xcb_icccm_get_wm_hints(Pointer(Connection), Window) : GetPropertyCookie 
 
@@ -230,11 +229,11 @@ lib LibXCB
 
 	fun xcb_icccm_get_wm_hints_from_reply(Pointer(IcccmWMHints), Pointer(GetPropertyReply)) : UInt8
 
-	xcb_icccm_get_wm_hints_reply(Pointer(Connection), GetPropertyCookie, Pointer(IcccmWMHints), Pointer(GenericError*)) : UInt8 
+	fun xcb_icccm_get_wm_hints_reply(Pointer(Connection), GetPropertyCookie, Pointer(IcccmWMHints), Pointer(GenericError*)) : UInt8 
 
-	fun xcb_icccm_set_wm_protocols_checked(Pointer(Connection), Window, Atom, UInt32, Pointer(Atom)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_protocols_checked(Pointer(Connection), Window, Atom, UInt32, Pointer(Atom)) : VoidCookie 
 
-	fun xcb_icccm_set_wm_protocols(Pointer(Connection), Window, Atom, UInt32, Pointer(Atom)) : xcb_Void_cookie_t 
+	fun xcb_icccm_set_wm_protocols(Pointer(Connection), Window, Atom, UInt32, Pointer(Atom)) : VoidCookie 
 
 	struct GetWMProtocolsReply
 		atoms_len : UInt32 
