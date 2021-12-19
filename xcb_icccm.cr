@@ -1,4 +1,4 @@
-@[Link("xcb")]
+@[Link("xcb-icccm")]
 lib LibXCB
 	struct IcccmGetTextPropertyReply
 		_reply : Pointer(GetPropertyReply)

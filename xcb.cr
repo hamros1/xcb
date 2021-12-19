@@ -148,8 +148,6 @@ lib LibXCB
 
 	fun xcb_disconnect(x0 : Pointer(Connection)) : Void
 
-	type Setup = Void*
-
 	fun xcb_get_setup(x0 : Pointer(Connection)) : Pointer(Setup)
 
 	fun xcb_parse_display(x0 : Pointer(Char), x1 : Pointer(Char*), x2 : Pointer(Int32), x3 : Pointer(Int32)) : Int32 
