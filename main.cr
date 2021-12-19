@@ -47,3 +47,21 @@ LibXCB.xcb_prefetch_maximum_request_length(conn)
 gcookie = LibXCB.xcb_get_geometry(conn, root)
 pcookie = LibXCB.xcb_query_pointer(conn, root)
 LibXCB.xcb_flush(conn)
+
+while event = LibXCB.xcb_wait_for_event(conn).value
+	if event.response_type == LibXCB::XCB_PROPERTY_NOTIFY
+		break
+	end
+end
+
+atom_name = LibXCB.xcb_atom_name_by_screen("WM_S".as(Char*), conn_screen)
+wm_sn_selection_owner = LibXCB.xcb_generate_id(conn)
+if !atom_name
+	puts "xcb_atom_name_by_screen(\"WM_S\", #{conn_screen}) failed"
+	exit
+end
+
+atom_reply = LibXCB.xcb_intern_atom_reply(conn, LibXCB.xcb_intern_atom(conn, 0, atom_name.as(String).size, atom_name), nil)
+atom_reply_ = atom_reply.value
+wm_sn = atom_reply_.atom
+

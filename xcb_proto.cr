@@ -422,6 +422,6 @@ response_type : UInt8
 	fun xcb_flush(x0 : Pointer(Connection)) : Int32
 	fun xcb_create_window(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Window, x4 : Int16, x5 : Int16, x6 : UInt16, x7 : UInt16, x8 : UInt16, x9 : UInt16, x10 : Int64, x11 : UInt32, x12 : Pointer(Void)) : VoidCookie
 	fun xcb_change_window_attributes_checked(x0 : Pointer(Connection), x1 : Window, x2 : UInt32, x3 : Pointer(Void)) : VoidCookie
-  fun xcb_intern_atom(Pointer(Connection), UInt8, UInt16, Pointer(Char)) : InternAtomCookie
+  fun xcb_intern_atom(x0 : Pointer(Connection), x1 : UInt8, x2 : UInt16, x3 : Pointer(Char)) : InternAtomCookie
 fun xcb_intern_atom_reply(Pointer(Connection), InternAtomCookie, Pointer(GenericError*)) : Pointer(InternAtomReply)
 end
