@@ -298,6 +298,35 @@ lib LibXCB
 	XCB_COLORMAP_ALLOC_NONE = 0x00
 	XCB_COLORMAP_ALLOC_ALL = 0x01
 
+	struct KeyPressEvent
+    response_type : UInt8
+    detail : KeyCode
+    sequence : UInt16
+    time : Timestamp
+    root : Window
+    event : Window
+    child : Window
+    root_x : Int16
+    root_y : Int16
+    event_x : Int16
+    event_y : Int16
+    state : UInt16
+    same_screen : UInt8
+    pad0 : UInt8
+	end
+
+	type KeyReleaseEvent = KeyPressEvent
+
+struct MappingNotifyEvent
+     response_type : UInt8
+     pad0 : UInt8
+     sequence : UInt16
+     request : UInt8
+     first_keycode : KeyCode
+     count : UInt8
+     pad1 : UInt8
+end
+
 	struct Setup
 		status : UInt8
 		pad0 : UInt8
@@ -372,6 +401,18 @@ lib LibXCB
 		sequence : UInt32
 	end
 
+	struct InternAtomReply
+response_type : UInt8
+		pad0 : UInt8
+		sequence : UInt16
+		length : UInt32
+		atom : Atom
+	end
+
+	struct AtomCookie
+		sequence : UInt32
+	end
+
 	fun xcb_setup_roots_iterator(x0 : Pointer(Setup)) : ScreenIterator
 	fun xcb_change_window_attributes(x0 : Pointer(Connection), x1 : Window, x2 : UInt32, x3 : Pointer(Void))
 	fun xcb_change_property(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Atom, x4 : Atom, x5 : UInt8, x6 : UInt32, x7 : Void*) : VoidCookie
@@ -381,4 +422,6 @@ lib LibXCB
 	fun xcb_flush(x0 : Pointer(Connection)) : Int32
 	fun xcb_create_window(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Window, x4 : Int16, x5 : Int16, x6 : UInt16, x7 : UInt16, x8 : UInt16, x9 : UInt16, x10 : Int64, x11 : UInt32, x12 : Pointer(Void)) : VoidCookie
 	fun xcb_change_window_attributes_checked(x0 : Pointer(Connection), x1 : Window, x2 : UInt32, x3 : Pointer(Void)) : VoidCookie
+  fun xcb_intern_atom(Pointer(Connection), UInt8, UInt16, Pointer(Char)) : InternAtomCookie
+fun xcb_intern_atom_reply(Pointer(Connection), InternAtomCookie, Pointer(GenericError*)) : Pointer(InternAtomReply)
 end

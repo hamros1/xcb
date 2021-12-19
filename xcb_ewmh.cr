@@ -4,7 +4,89 @@ lib LibXCB
 		connection : Pointer(Connection)
 		xcb_ewmh_screen : Pointer(Screen*)
 		nb_screens : Int32 
-		_NET_WM_CM_Sn : Pointer(Atom)
+		net_wm_cm_sN : Pointer(Atom)
+		net_supported : Atom
+		net_client_list : Atom
+		net_client_list_stacking : Atom
+		net_number_of_desktops : Atom 
+		net_desktop_geometry : Atom 
+		net_desktop_viewport : Atom
+		net_current_desktop : Atom
+		net_desktop_names : Atom
+		net_active_window : Atom
+		net_workarea : Atom
+		net_supporting_wm_check : Atom
+		net_virtual_roots : Atom
+		net_desktop_layout : Atom
+		net_showing_desktop : Atom
+		net_close_window : Atom
+		net_moveresize_window : Atom
+		net_wm_moveresize : Atom
+		net_restack_window : Atom
+		net_request_frame_extents : Atom
+		net_wm_name : Atom
+		net_wm_visible_name : Atom
+		net_wm_icon_name : Atom
+		net_wm_visible_icon_name : Atom
+		net_wm_desktop : Atom
+		net_wm_window_type : Atom
+		net_wm_state : Atom
+		net_wm_allowed_actions : Atom
+		net_wm_strut : Atom
+		net_wm_strut_partial : Atom
+		net_wm_icon_geometry : Atom
+		net_wm_icon : Atom
+		net_wm_pid : Atom
+		net_wm_handled_icons : Atom
+		net_wm_user_time : Atom
+		net_wm_user_time_window : Atom
+		net_frame_extents : Atom
+		net_wm_ping : Atom
+		net_wm_sync_request : Atom
+		net_wm_sync_request_counter : Atom
+		net_wm_fullscreen_monitors : Atom
+		net_wm_full_placement : Atom
+		utf8_string : Atom
+		wm_protocols : Atom
+		manager : Atom
+		net_wm_window_type_desktop : Atom
+		net_wm_window_type_dock : Atom
+		net_wm_window_type_toolbar : Atom
+		net_wm_window_type_menu : Atom
+		net_wm_window_type_utility : Atom
+		net_wm_window_type_splash : Atom
+		net_wm_window_type_dialog : Atom
+		net_wm_window_type_dropdown_menu : Atom
+		net_wm_window_type_popup_menu : Atom
+		net_wm_window_type_tooltip : Atom
+		net_wm_window_type_notification : Atom
+		net_wm_window_type_combo : Atom
+		net_wm_window_type_dnd : Atom
+		net_wm_window_type_normal : Atom
+		net_wm_state_modal : Atom
+		net_wm_state_sticky : Atom
+		net_wm_state_maximized_vert : Atom
+		net_wm_state_maximized_horz : Atom
+		net_wm_state_shaded : Atom
+		net_wm_state_skip_taskbar : Atom
+		net_wm_state_skip_pager : Atom
+		net_wm_state_hidden : Atom
+		net_wm_state_fullscreen : Atom
+		net_wm_state_above : Atom
+		net_wm_state_below : Atom
+		net_wm_state_demands_attention : Atom
+		net_wm_action_move : Atom
+		net_wm_action_resize : Atom
+		net_wm_action_minimize : Atom
+		net_wm_action_shade : Atom
+		net_wm_action_stick : Atom
+		net_wm_action_maximize_horz : Atom
+		net_wm_action_maximize_vert : Atom
+		net_wm_action_fullscreen : Atom
+		net_wm_action_change_desktop : Atom
+		net_wm_action_close : Atom
+		net_wm_action_above : Atom
+		net_wm_action_below : Atom
 	end
 
 	struct EwmhGetAtomsReply
@@ -87,8 +169,8 @@ lib LibXCB
 	XCB_EWMH_WM_MOVERESIZE_CANCEL = 11
 
 	XCB_EWMH_WM_STATE_REMOVE = 0
-		XCB_EWMH_WM_STATE_ADD = 1
-		XCB_EWMH_WM_STATE_TOGGLE = 2
+	XCB_EWMH_WM_STATE_ADD = 1
+	XCB_EWMH_WM_STATE_TOGGLE = 2
 
 	struct EwmhWMStrutPartial
 		left : UInt32 
@@ -286,7 +368,7 @@ lib LibXCB
 
 	fun xcb_ewmh_set_workarea(x0 : Pointer(EwmhConnection), x1 : Int32, x2 : UInt32, x3 : Pointer(EwmhGeometry)) : VoidCookie
 
-		fun xcb_ewmh_set_workarea_checked(x0 : Pointer(EwmhConnection), x1 : Int32, x2 : UInt32, x3 : Pointer(EwmhGeometry)) : VoidCookie 
+	fun xcb_ewmh_set_workarea_checked(x0 : Pointer(EwmhConnection), x1 : Int32, x2 : UInt32, x3 : Pointer(EwmhGeometry)) : VoidCookie 
 
 	fun xcb_ewmh_get_workarea_unchecked(x0 : Pointer(EwmhConnection), x1 : Int32) : GetPropertyCookie 
 
@@ -378,7 +460,7 @@ lib LibXCB
 
 	fun xcb_ewmh_get_wm_visible_name_from_reply(x0 : Pointer(EwmhConnection), x1 : Pointer(EwmhGetUTF8StringsReply), x2 : Pointer(GetPropertyReply)) : UInt8
 
-		fun xcb_ewmh_get_wm_visible_name_reply(x0 : Pointer(EwmhConnection), x1 : GetPropertyCookie, x2 : Pointer(EwmhGetUTF8StringsReply), x3 : Pointer(GenericError*)) : UInt8
+	fun xcb_ewmh_get_wm_visible_name_reply(x0 : Pointer(EwmhConnection), x1 : GetPropertyCookie, x2 : Pointer(EwmhGetUTF8StringsReply), x3 : Pointer(GenericError*)) : UInt8
 
 	fun xcb_ewmh_set_wm_icon_name(x0 : Pointer(EwmhConnection), x1 : Window, x2 : UInt32, x3 : Pointer(Char)) : VoidCookie 
 
@@ -442,7 +524,7 @@ lib LibXCB
 
 	fun xcb_ewmh_get_wm_state_reply(x0 : Pointer(EwmhConnection), x1 : GetPropertyCookie, x2 : Pointer(EwmhGetAtomsReply), x3 : Pointer(GenericError*)) : UInt8 
 
-#	fun request_change_wm_state(x0 : Pointer(EwmhConnection), x1 : Int32, x2 : Window, x3 : EwmhWMStateAction, x4 : Atom, x5 : Atom, x6 : EwmhClientSourceType) : VoidCookie 
+	#	fun request_change_wm_state(x0 : Pointer(EwmhConnection), x1 : Int32, x2 : Window, x3 : EwmhWMStateAction, x4 : Atom, x5 : Atom, x6 : EwmhClientSourceType) : VoidCookie 
 
 	fun xcb_ewmh_set_wm_allowed_actions(x0 : Pointer(EwmhConnection), x1 : Window, x2 : UInt32, x3 : Pointer(Atom)) : VoidCookie 
 
@@ -455,7 +537,7 @@ lib LibXCB
 
 	fun xcb_ewmh_get_wm_allowed_actions_reply(x0 : Pointer(EwmhConnection), x1 : GetPropertyCookie, x2 : Pointer(EwmhGetAtomsReply), x3 : Pointer(GenericError*)) : GetPropertyCookie
 
-		fun xcb_ewmh_set_wm_strut(x0 : Pointer(EwmhConnection), x1 : Window, x2 : UInt32, x3 : UInt32, x4 : UInt32, x5 : UInt32) : VoidCookie 
+	fun xcb_ewmh_set_wm_strut(x0 : Pointer(EwmhConnection), x1 : Window, x2 : UInt32, x3 : UInt32, x4 : UInt32, x5 : UInt32) : VoidCookie 
 
 	fun xcb_ewmh_set_wm_strut_checked(x0 : Pointer(EwmhConnection), x1 : Window, x2 : UInt32, x3 : UInt32, x4 : UInt32, x5 : UInt32) : VoidCookie 
 
@@ -467,9 +549,9 @@ lib LibXCB
 
 	fun xcb_ewmh_get_wm_strut_reply(x0 : Pointer(EwmhConnection), x1 : GetPropertyCookie, x2 : Pointer(EwmhGetExtentsReply), x3 : Pointer(GenericError*)) : UInt8 
 
-#	fun set_wm_strut_partial(x0 : Pointer(EwmhConnection), x1 : Window, x2 : EwmhWMStrutPartial) : VoidCookie 
+	#	fun set_wm_strut_partial(x0 : Pointer(EwmhConnection), x1 : Window, x2 : EwmhWMStrutPartial) : VoidCookie 
 
-#	fun set_wm_strut_partial_checked(x0 : Pointer(EwmhConnection), x1 : Window, x2 : EwmhWMStrutPartial) : VoidCookie 
+	#	fun set_wm_strut_partial_checked(x0 : Pointer(EwmhConnection), x1 : Window, x2 : EwmhWMStrutPartial) : VoidCookie 
 
 	fun xcb_ewmh_get_wm_strut_partial_unchecked(x0 : Pointer(EwmhConnection), x1 : Window) : GetPropertyCookie 
 
