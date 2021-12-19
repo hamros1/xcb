@@ -369,7 +369,7 @@ end
 		height_in_millimeters : UInt16
 		min_installed_maps : UInt16
 		max_installed_maps : UInt16
-		root_visual : Visualid
+		root_visual : Int64
 		backing_stores : UInt8
 		save_unders : UInt8
 		root_depth : UInt8
@@ -413,6 +413,18 @@ response_type : UInt8
 		sequence : UInt32
 	end
 
+	struct GetSelectionOwnerCookie
+		sequence : UInt32
+	end
+
+	       struct GetSelectionOwnerReply
+           response_type : UInt8
+           pad0 : UInt8
+           sequence : UInt16
+           length : UInt32
+           owner : Window
+end
+
 	fun xcb_setup_roots_iterator(x0 : Pointer(Setup)) : ScreenIterator
 	fun xcb_change_window_attributes(x0 : Pointer(Connection), x1 : Window, x2 : UInt32, x3 : Pointer(Void))
 	fun xcb_change_property(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Atom, x4 : Atom, x5 : UInt8, x6 : UInt32, x7 : Void*) : VoidCookie
@@ -423,5 +435,7 @@ response_type : UInt8
 	fun xcb_create_window(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Window, x4 : Int16, x5 : Int16, x6 : UInt16, x7 : UInt16, x8 : UInt16, x9 : UInt16, x10 : Int64, x11 : UInt32, x12 : Pointer(Void)) : VoidCookie
 	fun xcb_change_window_attributes_checked(x0 : Pointer(Connection), x1 : Window, x2 : UInt32, x3 : Pointer(Void)) : VoidCookie
   fun xcb_intern_atom(x0 : Pointer(Connection), x1 : UInt8, x2 : UInt16, x3 : Pointer(Char)) : InternAtomCookie
-fun xcb_intern_atom_reply(Pointer(Connection), InternAtomCookie, Pointer(GenericError*)) : Pointer(InternAtomReply)
+	fun xcb_intern_atom_reply(Pointer(Connection), InternAtomCookie, Pointer(GenericError*)) : Pointer(InternAtomReply)
+	fun xcb_get_selection_owner(Pointer(Connection), Atom) : GetSelectionOwnerCookie
+	fun xcb_get_selection_owner_reply(Pointer(Connection), GetSelectionOwnerCookie, Pointer(GenericError*)) : Pointer(GetSelectionOwnerReply)
 end

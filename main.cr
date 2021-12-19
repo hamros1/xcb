@@ -65,3 +65,13 @@ atom_reply = LibXCB.xcb_intern_atom_reply(conn, LibXCB.xcb_intern_atom(conn, 0, 
 atom_reply_ = atom_reply.value
 wm_sn = atom_reply_.atom
 
+selection_reply = LibXCB.xcb_get_selection_owner_reply(conn, LibXCB.xcb_get_selection_owner(conn, wm_sn), nil)
+selection_reply_ = selection_reply.value
+if selection_reply_ && selection_reply_.owner != LibXCB::XCB_NONE
+	puts "Another window manager is already running (WM_Sn is owned)"
+	exit
+end
+
+LibXCB.xcb_create_window(conn, root_screen_.root_depth, wm_sn_selection_owner, root_screen_.root, -1, -1, 1, 1, 0, LibXCB::XCB_WINDOW_CLASS_INPUT_OUTPUT, root_screen_.root_visual, 0, nil)
+LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, wm_sn_selection_owner, LibXCB::XCB_ATOM_WM_CLASS, LibXCB::XCB_ATOM_STRING, 8, ("i3-WM_Sn".as(String).size + 1) * 2, "i3-WM_Sn\0i3-WM_Sn\0")
+

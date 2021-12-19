@@ -10,8 +10,6 @@ lib LibXCB
 	type InternAtomCookie = Void*
 	alias Timestamp = UInt32
 	alias Gravity = UInt32
-	type GetSelectionOwnerCookie = Void*
-	type GetSelectionOwnerReply = Void*
 	type Pixmap = Void*
 	
 	fun GetProperty(Pointer(Connection), UInt8, Window, Atom, Atom, UInt32, UInt32) : GetPropertyCookie 
