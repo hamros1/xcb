@@ -109,4 +109,20 @@ xkb_supported = extreply_.present
 if extreply_.present
 	puts "xkb is not present on this server"
 else
+	LibXCB.xcb_xkb_use_extension(conn, LibXCB::XCB_XKB_MAJOR_VERSION, LibXCB::XCB_XKB_MINOR_VERSION)
+	LibXCB.xcb_xkb_select_events(conn, conn, LibXCB::XCB_XKB_ID_USE_CORE_KBD,LibXCB::XCB_XKB_EVENT_TYPE_STATE_NOTIFY | LibXCB::XCB_XKB_EVENT_TYPE_MAP_NOTIFY | LibXCB::XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY, 0, LibXCB::XCB_XKB_EVENT_TYPE_STATE_NOTIFY | LibXCB::XCB_XKB_EVENT_TYPE_MAP_NOTIFY | LibXCB::XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY, 0xff, 0xff, nil)
+	mask = LibXCB::XCB_XKB_PER_CLIENT_FLAG_GRABS_USE_XKB_STATE | LibXCB::XCB_XKB_PER_CLIENT_FLAG_LOOKUP_STATE_WHEN_GRABBED | LibXCB::XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT
+	pcf_reply = xcb_xkb_per_client_flags_reply(conn, xcb_xkb_per_client_flags(conn, LibXCB::XCB_XKB_ID_USE_CORE_KBD, mask, mask, 0, 0, 0), nil)
+
+	xkb_base = extreply_.first_event
 end
+
+extreply = LibXCB.xcb_get_extension_data(conn, pointerof(xcb_shape_id))
+if extreply.present
+	shape_base = extreply.first_event
+	cookie = LibXCB.xcb_shape_query_version(conn)
+	version = LibXCB.xcb_shape_query_version_reply(conn, cookie, nil)
+	shape_supported = version && version_minor >= 1
+else
+	shape_supported = false
+end 
