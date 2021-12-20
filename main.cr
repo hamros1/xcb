@@ -126,3 +126,14 @@ if extreply.present
 else
 	shape_supported = false
 end 
+
+supported_atoms = []
+ewmh_window = LibXCB.xcb_generate_id(conn)
+LibXCB.xcb_create_window(conn, LibXCB::XCB_COPY_FROM_PARENT, ewmh_window, root, -1, -1, 1, 1, 0, LibXCB::XCB_WINDOW_CLASS_INPUT_ONLY, LibXCB::XCB_COPY_FROM_PARENT, LibXCB::XCB_CW_OVERRIDE_REDIRECT, [1])
+LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, ewmh_window, NetSupportingWmCheck, LibXCB::XCB_ATOM_WINDOW, 32, 1, pointerof(ewmh))
+LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, ewmh_window, NetWmName, LibXCB::XCB_ATOM_WINDOW, 8, "i3".size, "i3")
+LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetSupportingWmCheck, LibXCB::XCB_ATOM_WINDOW, 32, 1, pointerof(ewmh_window))
+LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetWmName, LibXCB::XCB_ATOM_WINDOW, 8, "i3".size, "i3")
+LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetSupported, LibXCB::XCB_ATOM_ATOM, 32, sizeof(supported_atoms) / sizeof(LibXCB::Atom), supported_atoms)
+LibXCB.xcb_map_window(conn, ewmh_window)
+LibXCB.xcb_configure_window(conn, ewmh_window, LibXCB::XCB_CONFIG_WINDOW_STACK_MODE, [LibXCB::XCB_STACK_MODE_BELOW])
