@@ -249,20 +249,20 @@ struct ShapeQueryExtentsReply
 
 	fun xcb_shape_select_input_checked (x0 : Pointer(Connection), x1 : Window, x2 : UInt8) : VoidCookie
 
-	fun xcb_shape_input_selected_reply (x0 : Pointer(Connection), x1 : ShapeInputSelectedCookie, x2 : Pointer(Pointer(GenericError))) :  Pointer(ShapeInputSelectedReply
+	fun xcb_shape_input_selected_reply (x0 : Pointer(Connection), x1 : ShapeInputSelectedCookie, x2 : Pointer(Pointer(GenericError))) :  Pointer(ShapeInputSelectedReply)
 
-																																																																							fun xcb_shape_input_selected (x0 : Pointer(Connection), x1 : Window) : ShapeInputSelectedCookie
+	fun xcb_shape_input_selected (x0 : Pointer(Connection), x1 : Window) : ShapeInputSelectedCookie
 
-																																																																							fun xcb_shape_input_selected_unchecked (x0 : Pointer(Connection), x1 : Window) :  ShapeInputSelectedCookie
+	fun xcb_shape_input_selected_unchecked (x0 : Pointer(Connection), x1 : Window) :  ShapeInputSelectedCookie
 
-																																																																							fun xcb_shape_get_rectangles_rectangles (x0 :  Pointer(ShapeGetRectanglesReply)) :  Pointer(Rectangle)
+	fun xcb_shape_get_rectangles_rectangles (x0 :  Pointer(ShapeGetRectanglesReply)) :  Pointer(Rectangle)
 
-																																																																							fun xcb_shape_get_rectangles_rectangles_length (x0 : Pointer(ShapeGetRectanglesReply)) :  Int32
+	fun xcb_shape_get_rectangles_rectangles_length (x0 : Pointer(ShapeGetRectanglesReply)) :  Int32
 
-																																																																							fun xcb_shape_get_rectangles_rectangles_iterator (x0 : Pointer(ShapeGetRectanglesReply)) :  RectangleIterator
+	fun xcb_shape_get_rectangles_rectangles_iterator (x0 : Pointer(ShapeGetRectanglesReply)) :  RectangleIterator
 
-																																																																							fun xcb_shape_get_rectangles_reply (x0 : Pointer(Connection), x1 : GetRectanglesCookie, x2 : Pointer(Pointer(GenericError))) :  Pointer(ShapeGetRectanglesReply)
+	fun xcb_shape_get_rectangles_reply (x0 : Pointer(Connection), x1 : GetRectanglesCookie, x2 : Pointer(Pointer(GenericError))) :  Pointer(ShapeGetRectanglesReply)
 
-																																																																							fun xcb_shape_get_rectangles (x0 : Pointer(Connection), x1 : Window, x2 : ShapeKind) :  GetRectanglesCookie
+	fun xcb_shape_get_rectangles (x0 : Pointer(Connection), x1 : Window, x2 : ShapeKind) :  GetRectanglesCookie
 
-																																																																							fun xcb_shape_get_rectangles_unchecked (x0 : Pointer(Connection), x1 :     Window, x2 : ShapeKind) :  GetRectanglesCookie
+	fun xcb_shape_get_rectangles_unchecked (x0 : Pointer(Connection), x1 :     Window, x2 : ShapeKind) :  GetRectanglesCookie
