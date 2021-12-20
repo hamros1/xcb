@@ -24,62 +24,6 @@ LibXCB.xcb_prefetch_extension_data(conn, pointerof(xcb_randr_id))
 
 LibXCB.xcb_change_window_attributes(conn, root, LibXCB::XCB_CW_EVENT_MASK, [LibXCB::XCB_EVENT_MASK_PROPERTY_CHANGE])
 
-macro init_atoms(names)
-	{% for key, value in names %}
-		{{key}} = LibXCB.xcb_intern_atom(conn, 0, {{value}}.size, {{value}})
-	{% end %}
-	supported_atoms = [
-	{% for key in names %}
-		{{key}},
-	{% end %}
-	]
-end
-
-init_atoms({NetSupported => "_NET_SUPPORTED",
-		  NetSupportingWmCheck => "_NET_SUPPORTING_WM_CHECK",
-		  NetStartupId => "_NET_STARTUP_ID",
-			NetClientList => "_NET_CLIENT_LIST",
-			NetClientListStacking => "_NET_CLIENT_LIST_STACKING",
-		  NetNumberOfDesktops => "_NET_NUMBER_OF_DESKTOPS",
-			NetDesktopNames => "_NET_DESKTOP_NAMES",
-			NetActiveWindow => "_NET_ACTIVE_WINDOW",
-			NetCloseWindow => "_NET_CLOSE_WINDOW",
-			NetFrameExtents => "_NET_FRAME_EXTENTS",
-			NetWmName => "_NET_WM_NAME",
-			NetWmStrutPartial => "_NET_WM_STRUT_PARTIAL",
-			NetWmIconName => "_NET_WM_ICON_NAME",
-			NetWmVisibleIconName => "_NET_WM_VISIBLE_ICON_NAME",
-			NetWmDesktop => "_NET_WM_DESKTOP",
-			NetWMWindowTypeDesktop => "_NET_WM_WINDOW_TYPE_DESKTOP",
-			NetWmWindowTypeDock => "_NET_WM_WINDOW_TYPE_DOCK",
-			NetWmWindowTypeToolbar => "_NET_WM_WINDOW_TYPE_TOOLBAR",
-			NetWmWindowTypeMenu => "_NET_WM_WINDOW_TYPE_MENU",
-			NetWmWindowTypeUtility => "_NET_WM_WINDOW_TYPE_UTILITY",
-			NetWmWindowTypeSplash => "_NET_WM_WINDOW_TYPE_SPLASH",
-			NetWmWindowTypeDialog => "_NET_WM_WINDOW_TYPE_DIALOG",
-			NetWmWindowTypeDropdownMenu => "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU",
-			NetWmWindowTypePopupMenu => "_NET_WM_WINDOW_TYPE_POPUP_MENU",
-			NetWmWindowTypeTooltip => "_NET_WM_WINDOW_TYPE_TOOLTIP",
-			NetWmWindowTypeNotification => "_NET_WM_WINDOW_TYPE_NOTIFICATION",
-			NetWmWindowTypeCombo => "_NET_WM_WINDOW_TYPE_COMBO",
-			NetWmWindowTypeDND => "_NET_WM_WINDOW_TYPE_DND",
-			NetWmWindowTypeNormal => "_NET_WM_WINDOW_TYPE_NORMAL",
-			NetWmIcon => "_NET_WM_ICON",
-			NetWmPid => "_NET_WM_PID",
-			NetWmState => "_NET_WM_STATE",
-			NetWmStateSticky => "_NET_WM_STATE_STICKY",
-			NetWmStateSticky => "_NET_WM_STATE_SKIP_TASKBAR",
-			NetWmStateFullscreen => "_NET_WM_STATE_FULLSCREEN",
-			NetWmStateMaximizedHorz => "_NET_WM_STATE_MAXIMIZED_HORZ",
-			NetWmStateMaximizedVert => "_NET_WM_STATE_MAXIMIZED_VERT",
-			NetWmStateAbove => "_NET_WM_STATE_ABOVE",
-			NetWmStateBelow => "_NET_WM_STATE_BELOW",
-			NetWmStateModal => "_NET_WM_STATE_MODAL",
-			NetWmStateHidden => "_NET_WM_STATE_HIDDEN",
-			NetWmStateDemandsAttention => "_NET_WM_STATE_DEMANDS_ATTENTION"})
-
-xcb_change_property(conn, XCB_PROP_MODE_REPLACE, root, NetSupported, XCB_ATOM_ATOM, 32, XCB_ATOM_ATOM, 32, supported_atoms.size, supported_atoms)
-
 root_depth = root_screen_.root_depth
 colormap = root_screen_.default_colormap
 if visual_type = LibXCB.xcb_aux_find_visual_by_attrs(root_screen, -1, 32)
@@ -181,47 +125,90 @@ else
 	shape_supported = false
 end 
 
-supported_atoms = [_NET_SUPPORTED,
-									 _NET_SUPPORTING_WM_CHECK,
-									 _NET_WM_NAME,
-									 _NET_WM_VISIBLE_NAME,
-									 _NET_WM_MOVERESIZE,
-									 _NET_WM_STATE_FULLSCREEN,
-									 _NET_WM_STATE_DEMANDS_ATTENTION,
-									 _NET_WM_STATE_MODAL,
-									 _NET_WM_STATE_HIDDEN,
-									 _NET_WM_STATE_FOCUSED,
-									 _NET_WM_STATE,
-									 _NET_WM_WINDOW_TYPE,
-									 _NET_WM_WINDOW_TYPE_NORMAL,
-									 _NET_WM_WINDOW_TYPE_DOCK,
-									 _NET_WM_WINDOW_TYPE_DIALOG,
-									 _NET_WM_WINDOW_TYPE_UTILITY,
-									 _NET_WM_WINDOW_TYPE_TOOLBAR,
-									 _NET_WM_WINDOW_TYPE_SPLASH,
-									 _NET_WM_WINDOW_TYPE_MENU,
-									 _NET_WM_WINDOW_TYPE_DROPDOWN_MENU,
-									 _NET_WM_WINDOW_TYPE_POPUP_MENU,
-									 _NET_WM_WINDOW_TYPE_TOOLTIP,
-									 _NET_WM_WINDOW_TYPE_NOTIFICATION,
-									 _NET_WM_DESKTOP,
-									 _NET_WM_STRUT_PARTIAL,
-									 _NET_CLIENT_LIST,
-									 _NET_CLIENT_LIST_STACKING,
-									 _NET_CURRENT_DESKTOP,
-									 _NET_NUMBER_OF_DESKTOPS,
-									 _NET_DESKTOP_NAMES,
-									 _NET_DESKTOP_VIEWPORT,
-									 _NET_ACTIVE_WINDOW,
-									 _NET_CLOSE_WINDOW,
-									 _NET_MOVERESIZE_WINDOW]
+macro init_atoms(names)
+	{% for key, value in names %}
+		{{key}} = LibXCB.xcb_intern_atom(conn, 0, {{value}}.size, {{value}})
+	{% end %}
+	atoms = [
+	{% for key in names %}
+		{{key}},
+	{% end %}
+	]
+end
+
+init_atoms({NetSupported => "_NET_SUPPORTED",
+		  NetSupportingWmCheck => "_NET_SUPPORTING_WM_CHECK",
+		  NetStartupId => "_NET_STARTUP_ID",
+			NetClientList => "_NET_CLIENT_LIST",
+			NetClientListStacking => "_NET_CLIENT_LIST_STACKING",
+		  NetNumberOfDesktops => "_NET_NUMBER_OF_DESKTOPS",
+			NetDesktopNames => "_NET_DESKTOP_NAMES",
+			NetActiveWindow => "_NET_ACTIVE_WINDOW",
+			NetCloseWindow => "_NET_CLOSE_WINDOW",
+			NetFrameExtents => "_NET_FRAME_EXTENTS",
+			NetWmName => "_NET_WM_NAME",
+			NetWmStrutPartial => "_NET_WM_STRUT_PARTIAL",
+			NetWmIconName => "_NET_WM_ICON_NAME",
+			NetWmVisibleIconName => "_NET_WM_VISIBLE_ICON_NAME",
+			NetWmDesktop => "_NET_WM_DESKTOP",
+			NetWMWindowTypeDesktop => "_NET_WM_WINDOW_TYPE_DESKTOP",
+			NetWmWindowTypeDock => "_NET_WM_WINDOW_TYPE_DOCK",
+			NetWmWindowTypeToolbar => "_NET_WM_WINDOW_TYPE_TOOLBAR",
+			NetWmWindowTypeMenu => "_NET_WM_WINDOW_TYPE_MENU",
+			NetWmWindowTypeUtility => "_NET_WM_WINDOW_TYPE_UTILITY",
+			NetWmWindowTypeSplash => "_NET_WM_WINDOW_TYPE_SPLASH",
+			NetWmWindowTypeDialog => "_NET_WM_WINDOW_TYPE_DIALOG",
+			NetWmWindowTypeDropdownMenu => "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU",
+			NetWmWindowTypePopupMenu => "_NET_WM_WINDOW_TYPE_POPUP_MENU",
+			NetWmWindowTypeTooltip => "_NET_WM_WINDOW_TYPE_TOOLTIP",
+			NetWmWindowTypeNotification => "_NET_WM_WINDOW_TYPE_NOTIFICATION",
+			NetWmWindowTypeCombo => "_NET_WM_WINDOW_TYPE_COMBO",
+			NetWmWindowTypeDND => "_NET_WM_WINDOW_TYPE_DND",
+			NetWmWindowTypeNormal => "_NET_WM_WINDOW_TYPE_NORMAL",
+			NetWmIcon => "_NET_WM_ICON",
+			NetWmPid => "_NET_WM_PID",
+			NetWmState => "_NET_WM_STATE",
+			NetWmStateSticky => "_NET_WM_STATE_STICKY",
+			NetWmStateSticky => "_NET_WM_STATE_SKIP_TASKBAR",
+			NetWmStateFullscreen => "_NET_WM_STATE_FULLSCREEN",
+			NetWmStateMaximizedHorz => "_NET_WM_STATE_MAXIMIZED_HORZ",
+			NetWmStateMaximizedVert => "_NET_WM_STATE_MAXIMIZED_VERT",
+			NetWmStateAbove => "_NET_WM_STATE_ABOVE",
+			NetWmStateBelow => "_NET_WM_STATE_BELOW",
+			NetWmStateModal => "_NET_WM_STATE_MODAL",
+			NetWmStateHidden => "_NET_WM_STATE_HIDDEN",
+			NetWmStateDemandsAttention => "_NET_WM_STATE_DEMANDS_ATTENTION"})
+
+xcb_change_property(conn, XCB_PROP_MODE_REPLACE, root, NetSupported, XCB_ATOM_ATOM, 32, XCB_ATOM_ATOM, 32, atoms.size, atoms)
+
+ewmh_window = xcb_generate_id(conn)
+xcb_create_window(conn, XCB_COPY_FROM_PARENT, ewmh_window, root, -1, -1, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_OVERRIDE_REDIRECT, [1])
+
 
 ewmh_window = LibXCB.xcb_generate_id(conn)
 LibXCB.xcb_create_window(conn, LibXCB::XCB_COPY_FROM_PARENT, ewmh_window, root, -1, -1, 1, 1, 0, LibXCB::XCB_WINDOW_CLASS_INPUT_ONLY, LibXCB::XCB_COPY_FROM_PARENT, LibXCB::XCB_CW_OVERRIDE_REDIRECT, [1])
+
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, ewmh_window, NetSupportingWmCheck, LibXCB::XCB_ATOM_WINDOW, 32, 1, pointerof(ewmh))
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, ewmh_window, NetWmName, LibXCB::XCB_ATOM_WINDOW, 8, "i3".size, "i3")
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetSupportingWmCheck, LibXCB::XCB_ATOM_WINDOW, 32, 1, pointerof(ewmh_window))
+
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetWmName, LibXCB::XCB_ATOM_WINDOW, 8, "i3".size, "i3")
+
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetSupported, LibXCB::XCB_ATOM_ATOM, 32, sizeof(supported_atoms) / sizeof(LibXCB::Atom), supported_atoms)
+
 LibXCB.xcb_map_window(conn, ewmh_window)
 LibXCB.xcb_configure_window(conn, ewmh_window, LibXCB::XCB_CONFIG_WINDOW_STACK_MODE, [LibXCB::XCB_STACK_MODE_BELOW])
+
+keysyms = xcb_key_symbols_alloc(conn)
+
+LibXCB.xcb_num_lock_mask = aio_get_mod_mask_for(XCB_NUM_LOCK, keysyms)
+
+dummy_state = xkb_state_new(xkb_keymap)
+dummy_state_no_shift = xkb_state_new(xkb_keymap)
+dummy_state_numlock_no_shift = xkb_state_new(xkb_keymap)
+if !dummy_state || !dummy_state_numlock_no_shift || !dummy_state_no_shift
+	puts "Could not create XKB state, cannot translate keysyms"
+	exit
+end
+
+
