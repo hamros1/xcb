@@ -18,7 +18,11 @@ struct PerClientFlagsCookie
 	sequence : UInt32
 end
 
+type ActionControls = Void*
 type Context = Void*
+type KeyAlias = Void*
+type ModSet = Void*
+
 alias KeymapCompileFlags = UInt64
 alias KeymapFormat = UInt64
 alias ActionControls = UInt64
@@ -63,7 +67,7 @@ struct Keymap
     num_groups : LayoutIndex 
     num_group_names : LayoutIndex 
     group_names : Pointer(Atom)
-    leds : StaticArray(Led, XKB_MAX_LEDS)
+    leds : StaticArray(Led, 32)
     num_leds : UInt32
     keycodes_section_name : Pointer(Char)
     symbols_section_name : Pointer(Char)

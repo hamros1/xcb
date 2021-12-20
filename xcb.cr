@@ -1,16 +1,33 @@
 @[Link("xcb")]
 lib LibXCB
 	alias Atom = UInt32
-	type Visualid = Void*
-	alias Window = UInt32
-	alias GContext = UInt32
-	alias Drawable = UInt32
-	type GetPropertyCookie = Void* 
-	type GetPropertyReply = Void*
-	type InternAtomCookie = Void*
-	alias Timestamp = UInt32
+  alias Button = UInt8
+  alias Colormap = UInt32
+  alias Connection = Void
+  alias Cursor = UInt32
+  alias Drawable = UInt32
+  alias Font = UInt32
+  alias Fontable = UInt32
+  alias Gcontext = UInt32
 	alias Gravity = UInt32
-	type Pixmap = Void*
+  alias Keycode32 = UInt32
+  alias Keycode = UInt8
+  alias Keysym = UInt32
+  alias Pixmap = UInt32
+  alias SpecialEvent = Void
+  alias Timestamp = UInt32
+  alias Visualid = UInt32
+  alias Window = UInt32
+  alias XkbBellClassSpec = UInt16
+  alias XkbDeviceSpec = UInt16
+  alias XkbIdSpec = UInt16
+  alias XkbLedClassSpec = UInt16
+  alias XkbString8 = Char
+
+	type Visualid = Pointer(Void)
+	type GetPropertyCookie = Pointer(Void)
+	type GetPropertyReply = Pointer(Void)
+	type InternAtomCookie = Pointer(Void)
 	
 	fun GetProperty(Pointer(Connection), UInt8, Window, Atom, Atom, UInt32, UInt32) : GetPropertyCookie 
 
@@ -18,13 +35,13 @@ lib LibXCB
 
 	X_PROTOCOL_REVISION = 0
 
-	X_TCP_PORT = 6000
+	X_TCP_POR = 6000
 
 	XCB_CONN_ERROR = 1
 
 	XCB_CONN_CLOSED_EXT_NOTSUPPORTED = 2
 
-	XCB_CONN_CLOSED_MEM_INSUFFICIENT = 3
+	XCB_CONN_CLOSED_MEM_INSUFFICIEN = 3
 
 	XCB_CONN_CLOSED_REQ_LEN_EXCEED = 4
 
@@ -105,6 +122,30 @@ lib LibXCB
 		datalen :   Int32   
 		data :    Pointer(Char)
 	end
+
+  fun xcb_grab_button(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : UInt8, x9 : UInt16) : VoidCookie
+
+  fun xcb_grab_button_checked(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x8 : Cursor, x9 : UInt8, x10 : UInt16) : VoidCookie
+
+  fun xcb_grab_key(x0  : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : Keycode, x5 : UInt8, x6 : UInt8) : VoidCookie
+
+  fun xcb_grab_key_checked(x0  : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : Keycode, x5 : UInt8, x6 : UInt8) : VoidCookie
+
+  fun xcb_grab_keyboard(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Timestamp, x4 : UInt8, x5 : UInt8) : GrabKeyboardCookie
+
+  fun xcb_grab_keyboard_reply(x0 : Pointer(Connection), x1 : GrabKeyboardCookie, x2 : Pointer(GenericError*)) : Pointer(GrabKeyboardReply)
+
+  fun xcb_grab_keyboard_unchecked(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Timestamp, x4 : UInt8, x5 : UInt8) : GrabKeyboardCookie
+
+  fun xcb_grab_pointer(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : Timestamp) : GrabPointerCookie
+
+  fun xcb_grab_pointer_reply(x0 : Pointer(Connection), x1 : GrabPointerCookie, x2 : Pointer(GenericError*)) : Pointer(GrabPointerReply)
+
+  fun xcb_grab_pointer_unchecked(x0 : Connection, x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : Timestamp) : GrabPointerCookie
+
+  fun xcb_grab_server(x0 : Pointer(Connection)) : VoidCookie
+
+  fun xcb_grab_server_checked(x0 : Pointer(Connection)) : VoidCookie
 
 	fun xcb_flush(x0 : Pointer(Connection)) : Int32 
 

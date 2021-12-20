@@ -184,10 +184,6 @@ xcb_change_property(conn, XCB_PROP_MODE_REPLACE, root, NetSupported, XCB_ATOM_AT
 ewmh_window = xcb_generate_id(conn)
 xcb_create_window(conn, XCB_COPY_FROM_PARENT, ewmh_window, root, -1, -1, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_OVERRIDE_REDIRECT, [1])
 
-
-ewmh_window = LibXCB.xcb_generate_id(conn)
-LibXCB.xcb_create_window(conn, LibXCB::XCB_COPY_FROM_PARENT, ewmh_window, root, -1, -1, 1, 1, 0, LibXCB::XCB_WINDOW_CLASS_INPUT_ONLY, LibXCB::XCB_COPY_FROM_PARENT, LibXCB::XCB_CW_OVERRIDE_REDIRECT, [1])
-
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, ewmh_window, NetSupportingWmCheck, LibXCB::XCB_ATOM_WINDOW, 32, 1, pointerof(ewmh))
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, ewmh_window, NetWmName, LibXCB::XCB_ATOM_WINDOW, 8, "i3".size, "i3")
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetSupportingWmCheck, LibXCB::XCB_ATOM_WINDOW, 32, 1, pointerof(ewmh_window))
@@ -198,6 +194,16 @@ LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetSupport
 
 LibXCB.xcb_map_window(conn, ewmh_window)
 LibXCB.xcb_configure_window(conn, ewmh_window, LibXCB::XCB_CONFIG_WINDOW_STACK_MODE, [LibXCB::XCB_STACK_MODE_BELOW])
+
+root_output = create_root_output(conn)
+
+extreply = xcb_get_extension_data(conn, pointerof(xcb_randr_id))
+if !ext_reply.present
+	puts "RandR is not present, activating root output."
+end
+
+randr_version = xcb_randr_query_version(conn, LibXCB::XCB_RANDR_MAJOR_VERSION, XCB_RANDR_MINOR_VERSION, pointerof(error))
+has_randr_1_5 = randr_version.major_version >= 1 && randr_version.minor_version && !disable_randr15
 
 keysyms = xcb_key_symbols_alloc(conn)
 
