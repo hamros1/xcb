@@ -1,4 +1,4 @@
-
+@[Link("xcb")]
 lib LibXCB
 	XCB_WINDOW_CLASS_COPY_FROM_PARENT = 0
 	XCB_WINDOW_CLASS_INPUT_OUTPUT = 1
@@ -297,6 +297,21 @@ lib LibXCB
 
 	XCB_COLORMAP_ALLOC_NONE = 0x00
 	XCB_COLORMAP_ALLOC_ALL = 0x01
+
+	union ClientMessageData {
+		data8 : UInt8
+		data16 : UInt16
+		data32 : UInt32
+	}
+
+	struct ClientMessage
+		response_type : UInt8
+		format : UInt8
+		sequence : UInt16
+		window : Window
+		type : Atom
+		data : ClientMessageData
+	end
 
 	struct KeyPressEvent
     response_type : UInt8
