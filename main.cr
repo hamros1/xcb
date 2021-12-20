@@ -75,3 +75,38 @@ end
 LibXCB.xcb_create_window(conn, root_screen_.root_depth, wm_sn_selection_owner, root_screen_.root, -1, -1, 1, 1, 0, LibXCB::XCB_WINDOW_CLASS_INPUT_OUTPUT, root_screen_.root_visual, 0, nil)
 LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, wm_sn_selection_owner, LibXCB::XCB_ATOM_WM_CLASS, LibXCB::XCB_ATOM_STRING, 8, ("i3-WM_Sn".as(String).size + 1) * 2, "i3-WM_Sn\0i3-WM_Sn\0")
 
+if selection_reply && selection_reply_.owner != LibXCB::XCB_NONE
+	usleep_time = 100000
+	check_rounds = 150
+	loop do
+		#sleep(usleep_time)
+		geom_reply = LibXCB.xcb_get_geometry_reply(conn, LibXCB.xcb_get_geometry(conn, selection_reply_.owner), nil)
+		if geom_reply
+			break
+		end
+	end
+end
+
+cookie = LibXCB.xcb_change_window_attributes_checked(conn, root, LibXCB::XCB_CW_EVENT_MASK, [LibXCB::XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | LibXCB::XCB_EVENT_MASK_BUTTON_PRESS | LibXCB::XCB_EVENT_MASK_STRUCTURE_NOTIFY | LibXCB::XCB_EVENT_MASK_POINTER_MOTION | LibXCB::XCB_EVENT_MASK_PROPERTY_CHANGE | LibXCB::XCB_EVENT_MASK_FOCUS_CHANGE | LibXCB::XCB_EVENT_MASK_ENTER_WINDOW])
+if error = LibXCB.xcb_request_check(conn, cookie)
+	puts "Another window manager seems to be running (X error #{error.value.error_code})"
+	exit
+end
+
+greply = LibXCB.xcb_get_geometry_reply(conn, gcookie, nil)
+if !greply
+	puts "Could not get geometry of the root windw, exiting"
+	exit
+end
+
+cursors = ["left_ptr", "sb_h_double_arrow", "sb_v_double_arrow", "watch", "fleur", "top_left_corner", "top_right_corner", "bottom_left_corner", "bottom_right_corner"]
+
+LibXCB.xcb_change_window_attributes(conn, root, LibXCB::XCB_CW_CURSOR, "left_ptr")
+
+extreply = LibXCB.xcb_get_extension_data(conn, pointerof(xcb_xkb_id))
+extreply_ = extreply.value
+xkb_supported = extreply_.present
+if extreply_.present
+	puts "xkb is not present on this server"
+else
+end
