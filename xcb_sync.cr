@@ -24,7 +24,7 @@
 			alarm_value : Int64
 			timestamp : Timestamp
 			state : UInt8
-			pad0 : UInt8[3]
+			pad0 : StaticArray(UInt8, 3)
 		end
 
 		struct SyncAwaitFenceRequest

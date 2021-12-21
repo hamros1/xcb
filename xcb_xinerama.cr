@@ -132,29 +132,28 @@ lib LibXCB
     height : UInt16
   end
 
-
-  fun xinerama_get_screen_count = xcb_xinerama_get_screen_count(Pointer(Connection), window : Window) : XineramaGetScreenCountCookie
-  fun xinerama_get_screen_count_reply = xcb_xinerama_get_screen_count_reply(Pointer(Connection), cookie : XineramaGetScreenCountCookie, e : GenericError**) : XineramaGetScreenCountReply*
-  fun xinerama_get_screen_count_unchecked = xcb_xinerama_get_screen_count_unchecked(Pointer(Connection), window : Window) : XineramaGetScreenCountCookie
-  fun xinerama_get_screen_size = xcb_xinerama_get_screen_size(Pointer(Connection), window : Window, screen : UInt32) : XineramaGetScreenSizeCookie
-  fun xinerama_get_screen_size_reply = xcb_xinerama_get_screen_size_reply(Pointer(Connection), cookie : XineramaGetScreenSizeCookie, e : GenericError**) : XineramaGetScreenSizeReply*
-  fun xinerama_get_screen_size_unchecked = xcb_xinerama_get_screen_size_unchecked(Pointer(Connection), window : Window, screen : UInt32) : XineramaGetScreenSizeCookie
-  fun xinerama_get_state = xcb_xinerama_get_state(Pointer(Connection), window : Window) : XineramaGetStateCookie
-  fun xinerama_get_state_reply = xcb_xinerama_get_state_reply(Pointer(Connection), cookie : XineramaGetStateCookie, e : GenericError**) : XineramaGetStateReply*
-  fun xinerama_get_state_unchecked = xcb_xinerama_get_state_unchecked(Pointer(Connection), window : Window) : XineramaGetStateCookie
-  fun xinerama_is_active = xcb_xinerama_is_active(Pointer(Connection)) : XineramaIsActiveCookie
-  fun xinerama_is_active_reply = xcb_xinerama_is_active_reply(Pointer(Connection), cookie : XineramaIsActiveCookie, e : GenericError**) : XineramaIsActiveReply*
-  fun xinerama_is_active_unchecked = xcb_xinerama_is_active_unchecked(Pointer(Connection)) : XineramaIsActiveCookie
-  fun xinerama_query_screens = xcb_xinerama_query_screens(Pointer(Connection)) : XineramaQueryScreensCookie
-  fun xinerama_query_screens_reply = xcb_xinerama_query_screens_reply(Pointer(Connection), cookie : XineramaQueryScreensCookie, e : GenericError**) : XineramaQueryScreensReply*
-  fun xinerama_query_screens_screen_info = xcb_xinerama_query_screens_screen_info(r : XineramaQueryScreensReply*) : XineramaGetScreenInfo*
-  fun xinerama_query_screens_screen_info_iterator = xcb_xinerama_query_screens_screen_info_iterator(r : XineramaQueryScreensReply*) : XineramaScreenInfoIterator
-  fun xinerama_query_screens_screen_info_length = xcb_xinerama_query_screens_screen_info_length(r : XineramaQueryScreensReply*) : Int32
-  fun xinerama_query_screens_sizeof = xcb_xinerama_query_screens_sizeof(_buffer : Void*) : Int32
-  fun xinerama_query_screens_unchecked = xcb_xinerama_query_screens_unchecked(Pointer(Connection)) : XineramaQueryScreensCookie
-  fun xinerama_query_version = xcb_xinerama_query_version(Pointer(Connection), major : UInt8, minor : UInt8) : XineramaQueryVersionCookie
-  fun xinerama_query_version_reply = xcb_xinerama_query_version_reply(Pointer(Connection), cookie : XineramaQueryVersionCookie, e : GenericError**) : XineramaQueryVersionReply*
-  fun xinerama_query_version_unchecked = xcb_xinerama_query_version_unchecked(Pointer(Connection), major : UInt8, minor : UInt8) : XineramaQueryVersionCookie
-  fun xinerama_screen_info_end = xcb_xinerama_screen_info_end(i : XineramaScreenInfoIterator) : GenericIterator
-  fun xinerama_screen_info_next = xcb_xinerama_screen_info_next(i : XineramaScreenInfoIterator*)
+  fun xcb_xinerama_get_screen_count(Pointer(Connection), window : Window) : XineramaGetScreenCountCookie
+  fun xcb_xinerama_get_screen_count_reply(Pointer(Connection), cookie : XineramaGetScreenCountCookie, e : GenericError**) : XineramaGetScreenCountReply*
+  fun xcb_xinerama_get_screen_count_unchecked(Pointer(Connection), window : Window) : XineramaGetScreenCountCookie
+  fun xcb_xinerama_get_screen_size(Pointer(Connection), window : Window, screen : UInt32) : XineramaGetScreenSizeCookie
+  fun xcb_xinerama_get_screen_size_reply(Pointer(Connection), cookie : XineramaGetScreenSizeCookie, e : GenericError**) : XineramaGetScreenSizeReply*
+  fun xcb_xinerama_get_screen_size_unchecked(Pointer(Connection), window : Window, screen : UInt32) : XineramaGetScreenSizeCookie
+  fun xcb_xinerama_get_state(Pointer(Connection), window : Window) : XineramaGetStateCookie
+  fun xcb_xinerama_get_state_reply(Pointer(Connection), cookie : XineramaGetStateCookie, e : GenericError**) : XineramaGetStateReply*
+  fun xcb_xinerama_get_state_unchecked(Pointer(Connection), window : Window) : XineramaGetStateCookie
+  fun xcb_xinerama_is_active(Pointer(Connection)) : XineramaIsActiveCookie
+  fun xcb_xinerama_is_active_reply(Pointer(Connection), cookie : XineramaIsActiveCookie, e : GenericError**) : XineramaIsActiveReply*
+  fun xcb_xinerama_is_active_unchecked(Pointer(Connection)) : XineramaIsActiveCookie
+  fun xcb_xinerama_query_screens(Pointer(Connection)) : XineramaQueryScreensCookie
+  fun xcb_xinerama_query_screens_reply(Pointer(Connection), cookie : XineramaQueryScreensCookie, e : GenericError**) : XineramaQueryScreensReply*
+  fun xcb_xinerama_query_screens_screen_info(r : XineramaQueryScreensReply*) : XineramaGetScreenInfo*
+  fun xcb_xinerama_query_screens_screen_info_iterator(r : XineramaQueryScreensReply*) : XineramaScreenInfoIterator
+  fun xcb_xinerama_query_screens_screen_info_length(r : XineramaQueryScreensReply*) : Int32
+  fun xcb_xinerama_query_screens_sizeof(_buffer : Void*) : Int32
+  fun xcb_xinerama_query_screens_unchecked(Pointer(Connection)) : XineramaQueryScreensCookie
+  fun xcb_xinerama_query_version(Pointer(Connection), major : UInt8, minor : UInt8) : XineramaQueryVersionCookie
+  fun xcb_xinerama_query_version_reply(Pointer(Connection), cookie : XineramaQueryVersionCookie, e : GenericError**) : XineramaQueryVersionReply*
+  fun xcb_xinerama_query_version_unchecked(Pointer(Connection), major : UInt8, minor : UInt8) : XineramaQueryVersionCookie
+  fun xcb_xinerama_screen_info_end(i : XineramaScreenInfoIterator) : GenericIterator
+  fun xcb_xinerama_screen_info_next(i : XineramaScreenInfoIterator*)
 end
