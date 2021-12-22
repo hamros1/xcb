@@ -253,14 +253,10 @@ def output_change_mode(conn, output)
 end
 
 def randr_query_outputs_15
-	err = Pointer(LibXCB::GenericError).null
-
-	if !has_randr_1_5
-		return false
-	end
+	return false if !has_randr_1_5
 
 	monitors = LibXCB::xcb_randr_get_monitors_reply(conn, xcb_randr_get_monitors(conn, root, true), pointerof(err))
-
+	err = Pointer(LibXCB::GenericError).null
 	if err
 		puts "Could not get RandR monitors: X11  error code #{err.error_code}"
 		return false
@@ -287,7 +283,6 @@ def randr_query_outputs_15
 		new = get_output_by_name(name, false)
 		if !new
 			output.names_head = Deque(String).new
-
 			randr_outputs = xcb_randr_monitor_info_outputs(monitor_info)
 			randr_output_len = xcb_randr_monitor_info_outputs_length(monitor_info)
 			randr_output_len.times do |i|
@@ -295,35 +290,93 @@ def randr_query_outputs_15
 				info = xcb_randr_get_output_info_reply(conn, xcb_randr_get_output_info(conn, randr_output, monitors.timestamp), nil)
 				if info && info.crtc != XCB_NONE
 					output_name.name = name.dup
-					new.names_head.unshift(output_name)
+					new.names_head.unshift output_name
 				end
 			end
+
 			output_name.name = name.dup
-			new.names_head.unshift(output_name)
+			new.names_head.unshift output_name
 			if monitor_info.primary
-				outputs.unshift(new)
+				outputs.unshift new
 			else
-				outputs.insert(new)
+				outputs.push new
 			end
 		end
+
 		new.active = true
 		new.to_be_disabled = false
 		new.primary = monitor_info.primary
 
-		new.changed = (update_if_necessary(pointerof(new.rect.x), monitor_info.x) |
-									 update_if_necessary(pointerof(new.rect.y), monitor_info.y) |
-									 update_if_necessary(pointerof(new.rect.width), monitor_info.width)
-									 update_if_necessary(pointerof(new.rect.height), monitor_info.height))
+		new.changed = (
+			update_if_necessary(pointerof(new.rect.x), monitor_info.x) |
+			update_if_necessary(pointerof(new.rect.y), monitor_info.y) |
+			update_if_necessary(pointerof(new.rect.width), monitor_info.width) |
+			update_if_necessary(pointerof(new.rect.height), monitor_info.height)
+		)
 
 		puts "name #{name}, x #{monitor_info.x}, y #{monitor_info.y}, width #{monitor_info.width} px, height #{monitor_info.height} px, width #{monitor_info.width_in_millimeters}, height #{monitor_info.height_in_millimeters}, primary #{monitor_info.primary}, automatic #{monitor_info.automatic}"
 
 		xcb_randr_monitor_info_next(pointerof(iter)
 	end
-
 	return true
 end
 
 def handle_output(conn, id, output, cts, res)
+	new = get_output_by_id(id)
+	if !new
+		new.names_head = Deque(String).new
+	end
+	new.id = id
+	new.primary = (primary && primary.output == id)
+	while new.names_head.empty?
+		output_name = new.names_head
+		new.names_head.shift
+	end
+	new.names_head = Deque(String).new
+	puts "Found output with name #{output_primary_name(new)}"
+	if output.crtc == XCB_NONE
+		if !new
+			if new.primary
+				outputs.unshift new
+			else
+				outputs.push new
+			end
+		else if new.active 
+			new.to_be_disabled = true
+		end
+		return
+	end
+	icookie = xcb_randr_get_crtc_info(conn, output.crtc, cts)
+	if !crtc = xcb_randr_get_crtc_info_reply(conn, icookie, nil)
+		puts "Skipping output #{output_primary_name(new)}: could not get CRTC (#{crtc})"
+		return
+	end
+	updated = (
+			update_if_necessary(pointerof(new.rect.x), crtc.x) |
+			update_if_necessary(pointerof(new.rect.y), crtc.y) |
+			update_if_necessary(pointerof(new.rect.width), crtc.width) |
+			update_if_necessary(pointerof(new.rect.height), crtc.height)
+	)
+	new.active = (new.rect.width != 0 && new.rect.height != 0)
+	if !new.active
+		puts "width/height 0/0, disabling output"
+		return
+	end
+
+	puts "mode: #{new.rect.width}x#{new.rect.height}+#{new.rect.x}+#{new.rect.y}"
+
+	if !updated || !new
+		if !new
+			if new.primary
+				outputs.unshift new
+			else
+				outputs.push new
+			end
+			return
+		end
+	end
+
+	new.changed = true
 end
 
 def randr_query_outputs_14
