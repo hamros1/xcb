@@ -1,22 +1,23 @@
 @[Link("pango-1.0")
 	lib Pango
-		type Cairo = Void*
-			type CairoFontOptionsT = Void*
+		type GData = Void*
+			type Cairo = Void*
+			type CairoFontOptions = Void*
 			type PangoContext = Void*
 			alias PangoCairoShapeRendererFunc = (Cairo, PangoAttrShape*, Bool, Void -> Void)
-		type CairoFontOptionsT = Void*
+		type CairoFontOptions = Void*
 			type PangoCairoFont = Void*
 			type PangoCairoFontMap = Void*
-			type CairoScaledFontT = Void*
+			type CairoScaledFont = Void*
 			type PangoCairoFont = Void*
 			type PangoCairoFontMap = Void*
 			type PangoFontDescription = Void*
 			type PangoTabArray = Void*
 			type PangoLanguage = Void*
 			type PangoLayoutIter = Void*
-			type HbFaceT = Void*
+			alias PangoLayoutRun = PangoGlyphItem
+		type HbFaceT = Void*
 			type HbFontT = Void*
-
 			enum CairoFontType
 				CairoFontTypeoy    = 0
 				CairoFontTypeFt     = 1
@@ -24,7 +25,11 @@
 				CairoFontTypeQuartz = 3
 				CairoFontTypeUser   = 4
 		end
-
+		enum PangoAlignment
+			PangoAlignLeft   = 0
+			PangoAlignCenter = 1
+			PangoAlignRight  = 2
+		end
 		enum PangoGravity
 			PangoGravitySouth = 0
 			PangoGravityEast  = 1
@@ -32,7 +37,6 @@
 			PangoGravityWest  = 3
 			PangoGravityAuto  = 4
 		end
-
 		enum PangoFontMask
 			PangoFontMaskFamily     =   1
 			PangoFontMaskStyle      =   2
@@ -50,7 +54,6 @@
 			PangoFontScaleSubscript   = 2
 			PangoFontScaleSmallCaps   = 3
 		end
-
 		enum PangoVariant
 			PangoVariantNormal        = 0
 			PangoVariantSmallCaps     = 1
@@ -60,7 +63,6 @@
 			PangoVariantUnicase       = 5
 			PangoVariantTitleCaps     = 6
 		end
-
 		enum PangoWeight
 			PangoWeightThin       =  100
 			PangoWeightUltralight =  200
@@ -75,13 +77,11 @@
 			PangoWeightHeavy      =  900
 			PangoWeightUltraheavy = 1000
 		end
-
 		enum PangoStyle
 			PangoStyleNormal  = 0
 			PangoStyleOblique = 1
 			PangoStyleItalic  = 2
 		end
-
 		enum PangoStretch
 			PangoStretchUltraCondensed = 0
 			PangoStretchExtraCondensed = 1
@@ -93,27 +93,63 @@
 			PangoStretchExtraExpanded  = 7
 			PangoStretchUltraExpanded  = 8
 		end
-
-
+		enum PangoLayoutSerializeFlags
+			PangoLayoutSerializeDefault = 0
+			PangoLayoutSerializeContext = 1
+			PangoLayoutSerializeOutput  = 2
+		end
+		enum PangoEllipsizeMode
+			PangoEllipsizeNone   = 0
+			PangoEllipsizeStart  = 1
+			PangoEllipsizeMiddle = 2
+			PangoEllipsizeEnd    = 3
+		end
+		struct GError
+			domain : UInt32
+			code : Int32
+			message : Char*
+		end
+		struct GTypeClass
+			g_type : UInt64
+		end
+		struct GTypeInstance
+			g_class : GTypeClass*
+		end
+		struct GObject
+			g_type_instance : GTypeInstance
+			ref_count : UInt32
+			qdata : GData
+		end
 		struct GsList
 			data : Void*
 			next : GsList*
 		end
-
 		struct PangoRectangle
 			x : Int32
 			y : Int32
 			width : Int32
 			height : Int32
 		end
-
+		struct PangoGlyphVisAttr
+			is_cluster_start : UInt32
+			is_color : UInt32
+		end
+		struct PangoGlyphGeometry
+			width : Int32
+			x_offset : Int32
+			y_offset : Int32
+		end
+		struct PangoGlyphInfo
+			glyph : PangoGlyph
+			geometry : PangoGlyphGeometry
+			attr : PangoGlyphVisAttr
+		end
 		struct PangoGlyphString
 			num_glyphs : Int32
 			glyphs : PangoGlyphInfo*
 			log_clusters : Int32*
 			space : Int32
 		end
-
 		struct PangoLayoutLine
 			layout : PangoLayout
 			start_index : Int32
@@ -123,22 +159,76 @@
 			resolved_dir : UInt32
 		end
 
+		struct PangoLogAttr
+			is_line_break : UInt32
+			is_mandatory_break : UInt32
+			is_char_break : UInt32
+			is_white : UInt32
+			is_cursor_position : UInt32
+			is_word_start : UInt32
+			is_word_end : UInt32
+			is_sentence_boundary : UInt32
+			is_sentence_start : UInt32
+			is_sentence_end : UInt32
+			backspace_deletes_character : UInt32
+			is_expandable_space : UInt32
+			is_word_boundary : UInt32
+			break_inserts_hyphen : UInt32
+			break_removes_preceding : UInt32
+			reserved : UInt32
+		end
 		struct PangoFont
 			parent_instance : GObject
 		end
-
 		struct PangoFontFace
 			parent_instance : GObject
 		end
-
 		struct PangoFontFamily
 			parent_instance : GObject
 		end
-
 		struct PangoFontMap
 			parent_instance : GObject
 		end
 
+		struct PangoEngine
+			parent_instance : GObject
+		end 
+		struct PangoEngineShape
+			parent_instance : PangoEngine
+		end
+		struct PangoEngineLang
+			parent_instance : PangoEngine
+		end
+		struct PangoAnalysis
+			shape_engine : PangoEngineShape*
+			lang_engine : PangoEngineLang*
+			font : PangoFont*
+			level : UInt8
+			gravity : UInt8
+			flags : UInt8
+			script : UInt8
+			language : PangoLanguage
+			extra_attrs : GsList*
+		end
+		struct PangoItem
+			offset : Int32
+			length : Int32
+			num_chars : Int32
+			analysis : PangoAnalysis
+		end
+		struct PangoGlyphString
+			num_glyphs : Int32
+			glyphs : PangoGlyphInfo*
+			log_clusters : Int32*
+			space : Int32
+		end
+		struct PangoGlyphItem
+			item : PangoItem*
+			glyphs : PangoGlyphString*
+			y_offset : Int32
+			start_x_offset : Int32
+			end_x_offset : Int32
+		end
 		struct PangoFontMetrics
 			ref_count : UInt32
 			ascent : Int32
@@ -151,21 +241,25 @@
 			strikethrough_position : Int32
 			strikethrough_thickness : Int32
 		end
-
 		struct PangoFontset
 			parent_instance : GObject
 		end
-
-		fun pango_cairo_context_get_font_options(context : PangoContext) : CairoFontOptionsT
+		struct HbFeatureT
+			tag : UInt32
+			value : UInt32
+			start : UInt32
+			_end : UInt32
+		end
+		fun pango_cairo_context_get_font_options(context : PangoContext) : CairoFontOptions
 		fun pango_cairo_context_get_resolution(context : PangoContext) : Int64
 		fun pango_cairo_context_get_shape_renderer(context : PangoContext, data : Void*) : PangoCairoShapeRendererFunc
-		fun pango_cairo_context_set_font_options(context : PangoContext, options : CairoFontOptionsT)
+		fun pango_cairo_context_set_font_options(context : PangoContext, options : CairoFontOptions)
 		fun pango_cairo_context_set_resolution(context : PangoContext, dpi : Int64)
 		fun pango_cairo_context_set_shape_renderer(context : PangoContext, func : PangoCairoShapeRendererFunc, data : Void, dnotify : GDestroyNotify)
 		fun pango_cairo_create_context(cr : Cairo) : PangoContext
 		fun pango_cairo_create_layout(cr : Cairo) : PangoLayout
 		fun pango_cairo_error_underline_path(cr : Cairo, x : Int64, y : Int64, width : Int64, height : Int64)
-		fun pango_cairo_font_get_scaled_font(font : PangoCairoFont) : CairoScaledFontT
+		fun pango_cairo_font_get_scaled_font(font : PangoCairoFont) : CairoScaledFont
 		fun pango_cairo_font_get_type : UInt64
 		fun pango_cairo_font_map_create_context(fontmap : PangoCairoFontMap) : PangoContext
 		fun pango_cairo_font_map_get_default : PangoFontMap*
