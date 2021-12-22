@@ -61,6 +61,14 @@ def get_output_from_rect(x, y, width, height)
 end
 
 def get_output_with_dimensions
+	outputs.each do |output|
+		next if !output.active
+		puts "Comparing x=#{rect.x} y=#{rect.y} #{rect.width}x#{rect.height} with x=#{output.rect.x} and y= #{output.rect.y} #{output.rect.width}x#{output.rect.height}"
+		if rect.x == output.rect.x && rect.width == output.rect.width &&
+			 rect.y == output.rect.y && rect.height == output.rect.height
+			return output
+		end
+	end
 end
 
 def output_containing_rect
@@ -205,12 +213,114 @@ def output_init_con(output)
 end
 
 def init_ws_for_output
+	content = output_get_content(output.con)
+	previous_focus = con_get_workspace(focused)
+	all_cons.each do |workspace|
+		if workspace.type != CT_WORKSPACE || con_is_internal(workspace)
+			next
+		end
+		workspace_out = get_assigned_output(workspace.name, workspace.num)
+		if output.con != workspace_out
+			next
+		end
+		puts "Moving workspace #{workspace.name} from output #{output_primary_name(get_output_for_con(workspace))} to #{output_primary_name(output)} due to assignment"
+
+		content.rect = output.con.rect
+		workspace_move_to_output(workspace, output)
+	end
 end
 
 def output_change_mode(conn, output)
+	output.con.rect = output.rect
+	content = output_get_content(content.con)
+	content.nodes.each do |workspace|
+		floating_windows.each do |child|
+			floating_fix_cooordinates(child, pointerof(workspace.rect), pointerof(output.con.rect))
+		end
+	end
+	if default_orienatation == NO_ORIENTATION
+		nodes.each do |workspace|
+			next if con_num_children(workspace) > 1
+			workspace.layout = output.rect.height > output.rect.width ? L_SPLITV : L_SPLITH
+			puts "Setting workspace [#{workspace.num},#{workspace.name}]'s layout to #{workspace.layout}"
+			if child == nodes[0]
+				if child.layout == L_SPLITV || child.layout == L_SPLITH
+					child.layout = workspace.layout
+				end
+			end
+		end
+	end
 end
 
 def randr_query_outputs_15
+	err = Pointer(LibXCB::GenericError).null
+
+	if !has_randr_1_5
+		return false
+	end
+
+	monitors = LibXCB::xcb_randr_get_monitors_reply(conn, xcb_randr_get_monitors(conn, root, true), pointerof(err))
+
+	if err
+		puts "Could not get RandR monitors: X11  error code #{err.error_code}"
+		return false
+	end
+
+	outputs.each do |output|
+		if output != root_output
+			output.to_be_disabled = true
+		end
+	end
+
+	puts "#{xcb_randr_get_monitors_monitors_length(monitors)} Randr monitors found (timestamp #{monitors.timestamp})"
+
+	iter = xcb_randr_get_monitors_monitors_iterator(monitor)
+	while iter.rem
+		monitor_info = iter.data
+		atom_reply = xcb_get_atom_name_reply(conn, xcb_get_atom_name(conn, monitor_info.name), pointerof(err))
+
+		if err
+			puts "Could not get RandR monitor name: X11 error code #{err.error_code}"
+			next
+		end
+
+		new = get_output_by_name(name, false)
+		if !new
+			output.names_head = Deque(String).new
+
+			randr_outputs = xcb_randr_monitor_info_outputs(monitor_info)
+			randr_output_len = xcb_randr_monitor_info_outputs_length(monitor_info)
+			randr_output_len.times do |i|
+				randr_output = randr_outputs[i]
+				info = xcb_randr_get_output_info_reply(conn, xcb_randr_get_output_info(conn, randr_output, monitors.timestamp), nil)
+				if info && info.crtc != XCB_NONE
+					output_name.name = name.dup
+					new.names_head.unshift(output_name)
+				end
+			end
+			output_name.name = name.dup
+			new.names_head.unshift(output_name)
+			if monitor_info.primary
+				outputs.unshift(new)
+			else
+				outputs.insert(new)
+			end
+		end
+		new.active = true
+		new.to_be_disabled = false
+		new.primary = monitor_info.primary
+
+		new.changed = (update_if_necessary(pointerof(new.rect.x), monitor_info.x) |
+									 update_if_necessary(pointerof(new.rect.y), monitor_info.y) |
+									 update_if_necessary(pointerof(new.rect.width), monitor_info.width)
+									 update_if_necessary(pointerof(new.rect.height), monitor_info.height))
+
+		puts "name #{name}, x #{monitor_info.x}, y #{monitor_info.y}, width #{monitor_info.width} px, height #{monitor_info.height} px, width #{monitor_info.width_in_millimeters}, height #{monitor_info.height_in_millimeters}, primary #{monitor_info.primary}, automatic #{monitor_info.automatic}"
+
+		xcb_randr_monitor_info_next(pointerof(iter)
+	end
+
+	return true
 end
 
 def handle_output(conn, id, output, cts, res)
