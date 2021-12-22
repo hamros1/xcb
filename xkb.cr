@@ -1,4 +1,4 @@
-@[Link("xcb-util-xrm")]
+@[Link("xcb")]
 lib LibXCB
 alias DeviceSpec = UInt16
 
