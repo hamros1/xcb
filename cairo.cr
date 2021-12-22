@@ -1,7 +1,9 @@
 @Link("cairo")
 lib LibCairo
 	alias CairoBool = Int32
+	type CairoBox = CairoLine
 	alias CairoDestroyFunc = (Void* -> Void)
+	alias CairoFixed = Int32
 	alias CairoSurfaceObserverCallback = (CairoSurface*, CairoSurface*, Void* -> Void)
 	alias CairoRecursiveMutexImpl = Int32
 	alias CairoRecursiveMutex = CairoRecursiveMutexImpl
@@ -82,6 +84,47 @@ lib LibCairo
 		CairoSubpixelOrderVbgr    = 4
 	end
 
+	enum CairoDeviceType
+		CairoDeviceTypeDrm     =  0
+		CairoDeviceTypeGl      =  1
+		CairoDeviceTypeScript  =  2
+		CairoDeviceTypeXcb     =  3
+		CairoDeviceTypeXlib    =  4
+		CairoDeviceTypeXml     =  5
+		CairoDeviceTypeCogl    =  6
+		CairoDeviceTypeWin32   =  7
+		CairoDeviceTypeInvalid = -1
+	end
+
+	struct CairoPoint
+		x : CairoFixed
+		y : CairoFixed
+	end
+
+	struct CairoPointDouble
+		x : Double
+		y : Double
+	end
+
+	struct CairoPointInt
+		x : Int32
+		y : Int32
+	end
+
+	struct CairoLine
+		p1 : CairoPoint
+		p2 : CairoPoint
+	end
+
+	struct CairoDeviceBackend
+		type : CairoDeviceType
+		lock : (Void* -> Void)
+		unlock : (Void* -> Void)
+		flush : (Void* -> CairoStatus)
+		finish : (Void* -> Void)
+		destroy : (Void* -> Void)
+	end
+
 	struct CairoDevice
 		ref_count : CairoReferenceCount
 		status : CairoStatus
@@ -91,6 +134,24 @@ lib LibCairo
 		mutex_depth : UInt32
 		finished : CairoBool
 	end
+
+	struct CairoDamage
+		status : CairoStatus
+		region : CairoRegion*
+		dirty : Int32
+		remain : Int32
+		chunks : CairoDamageChunk
+		tail : CairoDamageChunk*
+		boxes : CairoBoxT[32]
+	end
+
+	struct CairoDamageChunk
+		_next : CairoDamageChunk*
+		base : CairoBox*
+		count : Int32
+		size : Int32
+	end
+
 
 	struct CairoSurface
 		backend : CairoSurfaceBackend*
@@ -133,6 +194,14 @@ lib LibCairo
 		CairoHintMetricsDefault = 0
 		CairoHintMetricsOff     = 1
 		CairoHintMetricsOn      = 2
+	end
+
+	enum CairoHintStyle
+		CairoHintStyleDefault = 0
+		CairoHintStyleNone    = 1
+		CairoHintStyleSlight  = 2
+		CairoHintStyleMedium  = 3
+		CairoHintStyleFull    = 4
 	end
 
 	struct CairoFontOptions
@@ -178,6 +247,30 @@ lib LibCairo
 		ref_count : CairoAtomicInt
 	end
 
+	enum CairoExtend
+		CairoExtendNone    = 0
+		CairoExtendRepeat  = 1
+		CairoExtendReflect = 2
+		CairoExtendPad     = 3
+	end
+
+	enum CairoFilter
+		CairoFilterFast     = 0
+		CairoFilterGood     = 1
+		CairoFilterBest     = 2
+		CairoFilterNearest  = 3
+		CairoFilterBilinear = 4
+		CairoFilterGaussian = 5
+	end
+
+	enum CairoPatternType
+		CairoPatternTypeSolid        = 0
+		CairoPatternTypeSurface      = 1
+		CairoPatternTypeLinear       = 2
+		CairoPatternTypeRadial       = 3
+		CairoPatternTypeMesh         = 4
+		CairoPatternTypeRasterSource = 5
+	end
 
 	struct CairoPattern
 		ref_count : CairoReferenceCount
@@ -186,7 +279,7 @@ lib LibCairo
 		observers : CairoList
 		type : CairoPatternType
 		filter : CairoFilter
-		extend : CairoExtend
+		extend_ : CairoExtend
 		has_component_alpha : CairoBool
 		matrix : CairoMatrix
 		opacity : Double
@@ -194,6 +287,36 @@ lib LibCairo
 
 	struct CairoUserDataKey
 		unused : Int32
+	end
+
+	enum CairoHintMetrics
+		CairoHintMetricsDefault = 0
+		CairoHintMetricsOff     = 1
+		CairoHintMetricsOn      = 2
+	end
+
+	enum CairoLcdFilter
+		CairoLcdFilterDefault    = 0
+		CairoLcdFilterNone       = 1
+		CairoLcdFilterIntraPixel = 2
+		CairoLcdFilterFir3       = 3
+		CairoLcdFilterFir5       = 4
+	end
+
+	enum CairoAntialias
+		CairoAntialiasDefault  = 0
+		CairoAntialiasNone     = 1
+		CairoAntialiasGray     = 2
+		CairoAntialiasSubpixel = 3
+		CairoAntialiasFast     = 4
+		CairoAntialiasGood     = 5
+		CairoAntialiasBest     = 6
+	end
+
+	enum CairoRoundGlyphPositions
+		CairoRoundGlyphPosDefault = 0
+		CairoRoundGlyphPosOn      = 1
+		CairoRoundGlyphPosOff     = 2
 	end
 
 	struct CairoFontOptions
@@ -205,7 +328,6 @@ lib LibCairo
 		round_glyph_positions : CairoRoundGlyphPositions
 		variations : Char*
 	end
-
 
 	fun cairo_create : Cairo*
 		fun cairo_create(target : CairoSurface*) : Cairo*
