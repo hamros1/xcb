@@ -1,3 +1,13 @@
+struct Font
+	property type : FontType
+	property height : Int32
+	property pattern : String
+	property id : LibXCB::Font
+	property info : LibXCB::QueryFontReply
+	property table : LibXCB::CharInfo
+	property pango_desc : PangoFontDescription
+end
+
 def create_layout_with_dpi(cr)
 	context = pango_cairo_create_context(cr)
 	pango_cairo_context_set_resolution(context, get_dpi_value())

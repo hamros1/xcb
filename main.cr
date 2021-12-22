@@ -1,220 +1,89 @@
 require "./**"
 
-conn_screen = uninitialized Int32
-conn = Pointer(LibXCB::Connection)
-xcb_xkb_id = uninitialized LibXCB::Extension
-xcb_shape_id = uninitialized LibXCB::Extension
-xcb_big_requests_id = uninitialized LibXCB::Extension
-xcb_randr_id = uninitialized LibXCB::Extension
+def handle_key_release
+	puts "Releasing #{event.detail}, state raw #{event.state}"
 
-conn = LibXCB.xcb_connect(nil, pointerof(conn_screen))
-if LibXCB.xcb_connection_has_error(conn)
-	puts "Cannot open display"
-	exit
-end
-
-root_screen = LibXCB.xcb_aux_get_screen(conn, conn_screen)
-root_screen_ = root_screen.value
-root = root_screen_.root
-
-LibXCB.xcb_prefetch_extension_data(conn, pointerof(xcb_xkb_id))
-LibXCB.xcb_prefetch_extension_data(conn, pointerof(xcb_shape_id))
-LibXCB.xcb_prefetch_extension_data(conn, pointerof(xcb_big_requests_id))
-LibXCB.xcb_prefetch_extension_data(conn, pointerof(xcb_randr_id))
-
-LibXCB.xcb_change_window_attributes(conn, root, LibXCB::XCB_CW_EVENT_MASK, [LibXCB::XCB_EVENT_MASK_PROPERTY_CHANGE])
-
-root_depth = root_screen_.root_depth
-colormap = root_screen_.default_colormap
-if visual_type = LibXCB.xcb_aux_find_visual_by_attrs(root_screen, -1, 32)
-	visual_type_ = visual_type.value
-	root_depth = LibXCB.xcb_aux_get_depth_of_visual(root_screen, visual_type_.visual_id)
-	colormap = LibXCB.xcb_generate_id(conn)
-
-	cm_cookie = LibXCB.xcb_create_colormap_checked(conn, LibXCB::XCB_COLORMAP_ALLOC_NONE, colormap, root, visual_type_.visual_id)
-
-	error = LibXCB.xcb_request_check(conn, cm_cookie)
-else
-end
-
-LibXCB.xcb_prefetch_maximum_request_length(conn)
-
-gcookie = LibXCB.xcb_get_geometry(conn, root)
-pcookie = LibXCB.xcb_query_pointer(conn, root)
-LibXCB.xcb_flush(conn)
-
-while event = LibXCB.xcb_wait_for_event(conn).value
-	if event.response_type == LibXCB::XCB_PROPERTY_NOTIFY
-		break
+	sym = xcb_key_press_lookup_keysym(symbols, event, event.state)
+	if sym == XK_Mode_Switch
+		puts "Mode switch disabled"
+		modeswitch_active = false
 	end
+
+	return 1
 end
 
-atom_name = LibXCB.xcb_atom_name_by_screen("WM_S".as(Char*), conn_screen)
-wm_sn_selection_owner = LibXCB.xcb_generate_id(conn)
-if !atom_name
-	puts "xcb_atom_name_by_screen(\"WM_S\", #{conn_screen}) failed"
-	exit
-end
+def handle_key_press(ignored, conn, event)
+	puts "Keypress #{event.detail}, state raw = #{event.state}"
 
-atom_reply = LibXCB.xcb_intern_atom_reply(conn, LibXCB.xcb_intern_atom(conn, 0, atom_name.as(String).size, atom_name), nil)
-atom_reply_ = atom_reply.value
-wm_sn = atom_reply_.atom
+	col = event.stae & XCB_MOD_MASK_SHIFT
 
-selection_reply = LibXCB.xcb_get_selection_owner_reply(conn, LibXCB.xcb_get_selection_owner(conn, wm_sn), nil)
-selection_reply_ = selection_reply.value
-if selection_reply_ && selection_reply_.owner != LibXCB::XCB_NONE
-	puts "Another window manager is already running (WM_Sn is owned)"
-	exit
-end
+	if modeswitch_active
+		col += 2
+	end
 
-LibXCB.xcb_create_window(conn, root_screen_.root_depth, wm_sn_selection_owner, root_screen_.root, -1, -1, 1, 1, 0, LibXCB::XCB_WINDOW_CLASS_INPUT_OUTPUT, root_screen_.root_visual, 0, nil)
-LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, wm_sn_selection_owner, LibXCB::XCB_ATOM_WM_CLASS, LibXCB::XCB_ATOM_STRING, 8, ("i3-WM_Sn".as(String).size + 1) * 2, "i3-WM_Sn\0i3-WM_Sn\0")
+	sym = xcb_key_press_lookup_keysym(symbols, event, col)
+	if sym == XK_Mode_switch
+		puts "Mode switch enabled"
+		modeswitch_active = true
+		return 1
+	end
 
-if selection_reply && selection_reply_.owner != LibXCB::XCB_NONE
-	usleep_time = 100000
-	check_rounds = 150
-	loop do
-		#sleep(usleep_time)
-		geom_reply = LibXCB.xcb_get_geometry_reply(conn, LibXCB.xcb_get_geometry(conn, selection_reply_.owner), nil)
-		if geom_reply
-			break
+	if sym == XK_Return
+		finish_input
+	end
+
+	if sym == XK_BackSpace
+		if input_position == 0
+			return 1
 		end
+
+		input_position -= 1
+
+		handle_expose(nil, conn, nil)
+		return 1
 	end
+
+	if sym == XK_Escape
+		exit
+	end
+
+	puts "is_keypad_key = #{xcb_is_keypad_key(sym)}"
+	puts "is_private_keypad_key = #{xcb_is_private_keypad_key(sym)}"
+	puts "xcb_is_cursor_key = #{xcb_is_cursor_key(sym)}"
+	puts "xcb_is_pf_key = #{xcb_is_pf_key(sym)}"
+	puts "xcb_is_function_key = #{xcb_is_function_key(sym)}"
+	puts "xcb_is_misc_function_key = #{xcb_is_misc_function_key(sym)}"
+	puts "xcb_is_modifier_key = #{xcb_is_modifier_key(sym)}"
+
+	if xcb_is_modifier_key(sym) || xcb_is_cursor_key(sym)
+		return 1
+	end
+
+	ucs = keysym2ucs(sym)
+	if ucs == -1
+		puts "Keysym could not be converted to UCS, skipping"
+		return 1
+	end
+
+	inp = LibXCB::Char2b.new(byte1: (ucs & 0xff00) >> 2, byte2: (ucs & 0x00ff) >> 0)
+	
+	puts "inp.byte1 = #{inp.byte1}, inp.byte2 = #{inp.byte2}"
+
+	_out = convert_ucs2_to_utf8(pointerof(inp), 1)
+
+	puts "Converted to #{_out}"
+
+	glyphs_ucs[input_position] = inp
+	glyphs_utf8[input_position] = _out
+	input_position += 1
+
+	if input_position == limit
+		finish_input
+	end
+
+	handle_expose(nil, conn, nil)
+	return 1
 end
 
-event = ClientMessageEvent.new(response_type: XCB_CLIENT_MESSAGE, window: root_screen_.root, format: 32, type: A_MANAGER, data.data32: [last_timestamp, wm_sn, wm_sn_selection_owner])
-LibXCB.send_event(conn, 0, window, XCB_EVENT_MASK_NO_EVENT, pointerof(event).as(LibC::Char*))
-
-cookie = LibXCB.xcb_change_window_attributes_checked(conn, root, LibXCB::XCB_CW_EVENT_MASK, [LibXCB::XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | LibXCB::XCB_EVENT_MASK_BUTTON_PRESS | LibXCB::XCB_EVENT_MASK_STRUCTURE_NOTIFY | LibXCB::XCB_EVENT_MASK_POINTER_MOTION | LibXCB::XCB_EVENT_MASK_PROPERTY_CHANGE | LibXCB::XCB_EVENT_MASK_FOCUS_CHANGE | LibXCB::XCB_EVENT_MASK_ENTER_WINDOW])
-if error = LibXCB.xcb_request_check(conn, cookie)
-	puts "Another window manager seems to be running (X error #{error.value.error_code})"
-	exit
+def get_window_position
 end
-
-greply = LibXCB.xcb_get_geometry_reply(conn, gcookie, nil)
-if !greply
-	puts "Could not get geometry of the root windw, exiting"
-	exit
-end
-
-cursors = ["left_ptr", "sb_h_double_arrow", "sb_v_double_arrow", "watch", "fleur", "top_left_corner", "top_right_corner", "bottom_left_corner", "bottom_right_corner"]
-
-LibXCB.xcb_change_window_attributes(conn, root, LibXCB::XCB_CW_CURSOR, "left_ptr")
-
-extreply = LibXCB.xcb_get_extension_data(conn, pointerof(xcb_xkb_id))
-extreply_ = extreply.value
-xkb_supported = extreply_.present
-if extreply_.present
-	puts "xkb is not present on this server"
-else
-	LibXCB.xcb_xkb_use_extension(conn, LibXCB::XCB_XKB_MAJOR_VERSION, LibXCB::XCB_XKB_MINOR_VERSION)
-	LibXCB.xcb_xkb_select_events(conn, conn, LibXCB::XCB_XKB_ID_USE_CORE_KBD,LibXCB::XCB_XKB_EVENT_TYPE_STATE_NOTIFY | LibXCB::XCB_XKB_EVENT_TYPE_MAP_NOTIFY | LibXCB::XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY, 0, LibXCB::XCB_XKB_EVENT_TYPE_STATE_NOTIFY | LibXCB::XCB_XKB_EVENT_TYPE_MAP_NOTIFY | LibXCB::XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY, 0xff, 0xff, nil)
-	mask = LibXCB::XCB_XKB_PER_CLIENT_FLAG_GRABS_USE_XKB_STATE | LibXCB::XCB_XKB_PER_CLIENT_FLAG_LOOKUP_STATE_WHEN_GRABBED | LibXCB::XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT
-	pcf_reply = xcb_xkb_per_client_flags_reply(conn, xcb_xkb_per_client_flags(conn, LibXCB::XCB_XKB_ID_USE_CORE_KBD, mask, mask, 0, 0, 0), nil)
-
-	xkb_base = extreply_.first_event
-end
-
-extreply = LibXCB.xcb_get_extension_data(conn, pointerof(xcb_shape_id))
-if extreply.present
-	shape_base = extreply.first_event
-	cookie = LibXCB.xcb_shape_query_version(conn)
-	version = LibXCB.xcb_shape_query_version_reply(conn, cookie, nil)
-	shape_supported = version && version_minor >= 1
-else
-	shape_supported = false
-end 
-
-macro init_atoms(names)
-	{% for key, value in names %}
-		{{key}} = LibXCB.xcb_intern_atom(conn, 0, {{value}}.size, {{value}})
-	{% end %}
-	atoms = [
-	{% for key in names %}
-		{{key}},
-	{% end %}
-	]
-end
-
-init_atoms({NetSupported => "_NET_SUPPORTED",
-		  NetSupportingWmCheck => "_NET_SUPPORTING_WM_CHECK",
-		  NetStartupId => "_NET_STARTUP_ID",
-			NetClientList => "_NET_CLIENT_LIST",
-			NetClientListStacking => "_NET_CLIENT_LIST_STACKING",
-		  NetNumberOfDesktops => "_NET_NUMBER_OF_DESKTOPS",
-			NetDesktopNames => "_NET_DESKTOP_NAMES",
-			NetActiveWindow => "_NET_ACTIVE_WINDOW",
-			NetCloseWindow => "_NET_CLOSE_WINDOW",
-			NetFrameExtents => "_NET_FRAME_EXTENTS",
-			NetWmName => "_NET_WM_NAME",
-			NetWmStrutPartial => "_NET_WM_STRUT_PARTIAL",
-			NetWmIconName => "_NET_WM_ICON_NAME",
-			NetWmVisibleIconName => "_NET_WM_VISIBLE_ICON_NAME",
-			NetWmDesktop => "_NET_WM_DESKTOP",
-			NetWMWindowTypeDesktop => "_NET_WM_WINDOW_TYPE_DESKTOP",
-			NetWmWindowTypeDock => "_NET_WM_WINDOW_TYPE_DOCK",
-			NetWmWindowTypeToolbar => "_NET_WM_WINDOW_TYPE_TOOLBAR",
-			NetWmWindowTypeMenu => "_NET_WM_WINDOW_TYPE_MENU",
-			NetWmWindowTypeUtility => "_NET_WM_WINDOW_TYPE_UTILITY",
-			NetWmWindowTypeSplash => "_NET_WM_WINDOW_TYPE_SPLASH",
-			NetWmWindowTypeDialog => "_NET_WM_WINDOW_TYPE_DIALOG",
-			NetWmWindowTypeDropdownMenu => "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU",
-			NetWmWindowTypePopupMenu => "_NET_WM_WINDOW_TYPE_POPUP_MENU",
-			NetWmWindowTypeTooltip => "_NET_WM_WINDOW_TYPE_TOOLTIP",
-			NetWmWindowTypeNotification => "_NET_WM_WINDOW_TYPE_NOTIFICATION",
-			NetWmWindowTypeCombo => "_NET_WM_WINDOW_TYPE_COMBO",
-			NetWmWindowTypeDND => "_NET_WM_WINDOW_TYPE_DND",
-			NetWmWindowTypeNormal => "_NET_WM_WINDOW_TYPE_NORMAL",
-			NetWmIcon => "_NET_WM_ICON",
-			NetWmPid => "_NET_WM_PID",
-			NetWmState => "_NET_WM_STATE",
-			NetWmStateSticky => "_NET_WM_STATE_STICKY",
-			NetWmStateSticky => "_NET_WM_STATE_SKIP_TASKBAR",
-			NetWmStateFullscreen => "_NET_WM_STATE_FULLSCREEN",
-			NetWmStateMaximizedHorz => "_NET_WM_STATE_MAXIMIZED_HORZ",
-			NetWmStateMaximizedVert => "_NET_WM_STATE_MAXIMIZED_VERT",
-			NetWmStateAbove => "_NET_WM_STATE_ABOVE",
-			NetWmStateBelow => "_NET_WM_STATE_BELOW",
-			NetWmStateModal => "_NET_WM_STATE_MODAL",
-			NetWmStateHidden => "_NET_WM_STATE_HIDDEN",
-			NetWmStateDemandsAttention => "_NET_WM_STATE_DEMANDS_ATTENTION"})
-
-xcb_change_property(conn, XCB_PROP_MODE_REPLACE, root, NetSupported, XCB_ATOM_ATOM, 32, XCB_ATOM_ATOM, 32, atoms.size, atoms)
-
-ewmh_window = xcb_generate_id(conn)
-xcb_create_window(conn, XCB_COPY_FROM_PARENT, ewmh_window, root, -1, -1, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_OVERRIDE_REDIRECT, [1])
-
-LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, ewmh_window, NetSupportingWmCheck, LibXCB::XCB_ATOM_WINDOW, 32, 1, pointerof(ewmh))
-LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, ewmh_window, NetWmName, LibXCB::XCB_ATOM_WINDOW, 8, "i3".size, "i3")
-LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetSupportingWmCheck, LibXCB::XCB_ATOM_WINDOW, 32, 1, pointerof(ewmh_window))
-
-LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetWmName, LibXCB::XCB_ATOM_WINDOW, 8, "i3".size, "i3")
-
-LibXCB.xcb_change_property(conn, LibXCB::XCB_PROP_MODE_REPLACE, root, NetSupported, LibXCB::XCB_ATOM_ATOM, 32, sizeof(supported_atoms) / sizeof(LibXCB::Atom), supported_atoms)
-
-LibXCB.xcb_map_window(conn, ewmh_window)
-LibXCB.xcb_configure_window(conn, ewmh_window, LibXCB::XCB_CONFIG_WINDOW_STACK_MODE, [LibXCB::XCB_STACK_MODE_BELOW])
-
-root_output = create_root_output(conn)
-
-extreply = xcb_get_extension_data(conn, pointerof(xcb_randr_id))
-if !ext_reply.present
-	puts "RandR is not present, activating root output."
-end
-
-randr_version = xcb_randr_query_version(conn, LibXCB::XCB_RANDR_MAJOR_VERSION, XCB_RANDR_MINOR_VERSION, pointerof(error))
-has_randr_1_5 = randr_version.major_version >= 1 && randr_version.minor_version && !disable_randr15
-
-keysyms = xcb_key_symbols_alloc(conn)
-
-LibXCB.xcb_num_lock_mask = aio_get_mod_mask_for(XCB_NUM_LOCK, keysyms)
-
-dummy_state = xkb_state_new(xkb_keymap)
-dummy_state_no_shift = xkb_state_new(xkb_keymap)
-dummy_state_numlock_no_shift = xkb_state_new(xkb_keymap)
-if !dummy_state || !dummy_state_numlock_no_shift || !dummy_state_no_shift
-	puts "Could not create XKB state, cannot translate keysyms"
-	exit
-end
-
-

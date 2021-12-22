@@ -64,18 +64,144 @@ def get_output_with_dimensions
 end
 
 def output_containing_rect
+	lx = rect.x + rect.width, by = rect.y + rect.height
+	max_area = 0
+
+	outputs.each do |output|
+		next if !output.active
+
+		lx_o = output.rect.x, uy_o = output.rect.y
+		rx_o = output.rect.x + output.rect.width, by_o = output.rect.y + output.rect.height
+
+		puts "Comparing x=#{rect.x} y=#{rect.y} with x=#{output.rect.x} and y=#{output.rect.y} width #{output.rect.width} height #{output.rect.height}"
+
+		left = max(lx, lx_o)
+		right = min(rx, rx_o)
+		bottom = min(by, by_o)
+		top = max(uy, uy_o)
+
+		if left < right && bottom > top
+			area = (right - left) * (bottom - top)
+			if area > max_area
+				return output
+			end
+		end
+	end
 end
 
-def get_output_next_wrap
+def get_output_next_wrap(direction, current)
+	best = get_output_next(direction, current, CLOSEST_OUTPUT)
+	if !best
+		case direction
+		when D_RIGHT
+			opposite = D_LEFT
+		when D_LEFT
+			opposite = D_RIGHT
+		when D_DOWN
+			opposite = D_UP
+		else
+			opposite = D_DOWN
+		end
+		best = get_output_next(opposite, current, FARTHEST_OUTPUT)
+	end
+	if !best
+		best = current
+	end
+	puts "current = #{output_primary_name(current)}, best = #{output_primary_name(best)}"
+	return best
 end
 
-def get_output_next
+def get_output_next(direction, current, close_far)
+	cur = current.rect
+	outputs.each do |output|
+		next if !output.active
+
+		other = output.rect
+
+		if (direction == D_RIGHT && other.x > cur.x) ||
+			 (direction == D_LEFT && other.x < cur.x)
+			if (other.y + other.height) <= cur.y ||
+				 (cur.y + cur.height) <= other.y
+				next
+			end
+		else if (direction == D_DOWN && other.y > cur.y) ||
+						(direction == D_UP && other.y < cur.y)
+			if (other.x + other.width <= cur.x) ||
+				 (cur.x + cur.width) <= other.x
+				next
+			end
+		else
+			next
+		end
+
+		if !best
+			best = output
+			next
+		end
+
+		if close_far == CLOSEST_OUTPUT
+			if (direction == D_RIGHT && other.x < best.rect.x) ||
+				 (direction == D_LEFT && other.x > best.rect.x) ||
+				 (direction == D_DOWN && other.y < best.rect.y) ||
+				 (direction == D_UP && other.y > best.rect.y)
+				best = output
+				next
+			end
+		else
+			if (direction == D_RIGHT && other.x > best.rect.x) ||
+			(direction == D_LEFT && other.x < best.rect.x) ||
+			(direction == D_DOWN && other.y > best.rect.y) ||
+			(direction == D_UP && other.y < best.rect.y)
+				best = output
+				next
+			end
+		end
+	end
+	puts "Current = #{output_primary_name(current)}, best = #{(best ? output_primary_name(best) : nil}"
+	return best
 end
 
-def create_root_output
+def create_root_output(conn)
+	output_name = "xroot-0".as(Array(String))
+	s = Output.new(active: false,
+								 rect: {x: 0, y: 0,
+								 width: root_screen.width_in_pixels,
+								 height: root_screen.height_in_pixels,
+								 names_head: Deque.new(output_name)})
+	return s
 end
 
-def output_init_con
+def output_init_con(output)
+	reused = false
+	puts "init_con for output #{output_primary_name(output)}"
+	croot.nodes_head.each do |current|
+		next if current.name.compare(output_primary_name(output))
+		con = current
+		reused = true
+		puts "Using existing con #{con} / #{con.name}"
+		break
+	end
+	if !con
+		con = con_new(croot, nil)
+		con.name = output_primary_name(output).dup
+		con.type = CT_OUTPUT
+		con.layout = L_OUTPUT
+		con_fix_percent(croot)
+	end
+	con.rect = output.rect
+	output.con = con
+	puts "[con] output #{con.name}"
+	x_set_name(con, name)
+	if reused
+		puts "Not adding workspace, this was a reused con"
+		return
+	end
+	content = con_new(nil, nil)
+	content.type = CT_CON
+	content.layout = L_SPLITH
+	content.name = "content".dup
+	x_set_name(content, name)
+	con_attach(content, con, false)
 end
 
 def init_ws_for_output
