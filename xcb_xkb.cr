@@ -1,10 +1,9 @@
 @[Link("xcb")]
 lib LibXCB
-	alias XkbBellClassSpecT = Uint16
-	alias XkbDeviceSpecT = Uint16
-	alias XkbIdSpecT = Uint16
-	alias XkbLedClassSpecT = Uint16
-	alias XkbString8T = Char
+	alias XkbBellClassSpec = Uint16
+	alias XkbDeviceSpec = Uint16
+	alias XkbIdSpec = Uint16
+	alias XkbLedClassSpec = Uint16
 
 	struct XkbAccessXNotifyEvent
 		response_type : UInt32
@@ -36,7 +35,7 @@ lib LibXCB
 		key_event_follows : UInt32
 		mods : UInt32
 		group : UInt32
-		message : XkbString8T[8]
+		message : CharT[8]
 		pad0 : UInt8[10]
 	end
 
@@ -373,14 +372,14 @@ lib LibXCB
 	end
 
 	struct XkbGetKbdByNameReplies
-		types : XkbGetKbdByNameRepliesTTypes
-		compat_map : XkbGetKbdByNameRepliesTCompatMap
-		indicator_maps : XkbGetKbdByNameRepliesTIndicatorMaps
-		key_names : XkbGetKbdByNameRepliesTKeyNames
-		geometry : XkbGetKbdByNameRepliesTGeometry
+		types : XkbGetKbdByNameRepliesTypes
+		compat_map : XkbGetKbdByNameRepliesCompatMap
+		indicator_maps : XkbGetKbdByNameRepliesIndicatorMaps
+		key_names : XkbGetKbdByNameRepliesKeyNames
+		geometry : XkbGetKbdByNameRepliesGeometry
 	end
 
-	struct XkbGetKbdByNameRepliesTCompatMap
+	struct XkbGetKbdByNameRepliesCompatMap
 		compatmap_type : UInt32
 		compat_device_id : UInt32
 		compatmap_sequence : Uint16
@@ -395,7 +394,7 @@ lib LibXCB
 		group_rtrn : XkbModDef*
 	end
 
-	struct XkbGetKbdByNameRepliesTGeometry
+	struct XkbGetKbdByNameRepliesGeometry
 		geometry_type : UInt32
 		geometry_device_id : UInt32
 		geometry_sequence : Uint16
@@ -416,7 +415,7 @@ lib LibXCB
 		label_font : XkbCountedString16*
 	end
 
-	struct XkbGetKbdByNameRepliesTIndicatorMaps
+	struct XkbGetKbdByNameRepliesIndicatorMaps
 		indicatormap_type : UInt32
 		indicator_device_id : UInt32
 		indicatormap_sequence : Uint16
@@ -428,7 +427,7 @@ lib LibXCB
 		maps : XkbIndicatorMap*
 	end
 
-	struct XkbGetKbdByNameRepliesTKeyNames
+	struct XkbGetKbdByNameRepliesKeyNames
 		keyname_type : UInt32
 		key_device_id : UInt32
 		keyname_sequence : Uint16
@@ -449,7 +448,7 @@ lib LibXCB
 		value_list : XkbGetKbdByNameRepliesKeyNamesValueList
 	end
 
-	struct XkbGetKbdByNameRepliesTTypes
+	struct XkbGetKbdByNameRepliesTypes
 		getmap_type : UInt32
 		type_device_id : UInt32
 		getmap_sequence : Uint16
@@ -823,7 +822,7 @@ lib LibXCB
 	end
 
 	struct XkbKey
-		name : XkbString8T[4]
+		name : CharT[4]
 		gap : Int16
 		shape_ndx : UInt32
 		color_ndx : UInt32
@@ -1081,8 +1080,8 @@ lib LibXCB
 	end
 
 	struct XkbOverlayKey
-		over : XkbString8T[4]
-		under : XkbString8T[4]
+		over : CharT[4]
+		under : CharT[4]
 	end
 
 	struct XkbOverlayRowIterator
@@ -1824,8 +1823,8 @@ lib LibXCB
 		request_minor : UInt32
 	end
 
-	struct XkbString8Iterator
-		data : XkbString8*
+	struct CharIterator
+		data : Char*
 		rem : Int32
 		index : Int32
 	end
@@ -1919,7 +1918,7 @@ lib LibXCB
 	fun xcb_xkb_get_device_info_btn_actions_length(r : XkbGetDeviceInfoReply*) : Int32
 	fun xcb_xkb_get_device_info_leds_iterator(r : XkbGetDeviceInfoReply*) : XkbDeviceLedInfoIterator
 	fun xcb_xkb_get_device_info_leds_length(r : XkbGetDeviceInfoReply*) : Int32
-	fun xcb_xkb_get_device_info_name(r : XkbGetDeviceInfoReply*) : XkbString8*
+	fun xcb_xkb_get_device_info_name(r : XkbGetDeviceInfoReply*) : Char*
 		fun xcb_xkb_get_device_info_name_end(r : XkbGetDeviceInfoReply*) : GenericIterator
 	fun xcb_xkb_get_device_info_name_length(r : XkbGetDeviceInfoReply*) : Int32
 	fun xcb_xkb_get_device_info_reply(c : Connection, cookie : XkbGetDeviceInfoCookie, e : GenericError**) : XkbGetDeviceInfoReply*
@@ -2145,7 +2144,7 @@ lib LibXCB
 	fun xcb_xkb_listing_end(i : XkbListingIterator) : GenericIterator
 	fun xcb_xkb_listing_next(i : XkbListingIterator*)
 	fun xcb_xkb_listing_sizeof(_buffer : Void*) : Int32
-	fun xcb_xkb_listing_string(r : XkbListing*) : XkbString8*
+	fun xcb_xkb_listing_string(r : XkbListing*) : Char*
 		fun xcb_xkb_listing_string_end(r : XkbListing*) : GenericIterator
 	fun xcb_xkb_listing_string_length(r : XkbListing*) : Int32
 	fun xcb_xkb_lock_behavior_end(i : XkbLockBehaviorIterator) : GenericIterator
@@ -2254,10 +2253,10 @@ lib LibXCB
 	fun xcb_xkb_set_compat_map_sizeof(_buffer : Void*) : Int32
 	fun xcb_xkb_set_controls(c : Connection, device_spec : XkbDeviceSpec, affect_internal_real_mods : UInt8, internal_real_mods : UInt8, affect_ignore_lock_real_mods : UInt8, ignore_lock_real_mods : UInt8, affect_internal_virtual_mods : UInt16, internal_virtual_mods : UInt16, affect_ignore_lock_virtual_mods : UInt16, ignore_lock_virtual_mods : UInt16, mouse_keys_dflt_btn : UInt8, groups_wrap : UInt8, access_x_options : UInt16, affect_enabled_controls : UInt32, enabled_controls : UInt32, change_controls : UInt32, repeat_delay : UInt16, repeat_interval : UInt16, slow_keys_delay : UInt16, debounce_delay : UInt16, mouse_keys_delay : UInt16, mouse_keys_interval : UInt16, mouse_keys_time_to_max : UInt16, mouse_keys_max_speed : UInt16, mouse_keys_curve : Int16, access_x_timeout : UInt16, access_x_timeout_mask : UInt32, access_x_timeout_values : UInt32, access_x_timeout_options_mask : UInt16, access_x_timeout_options_values : UInt16, per_key_repeat : UInt8*) : VoidCookie
 	fun xcb_xkb_set_controls_checked(c : Connection, device_spec : XkbDeviceSpec, affect_internal_real_mods : UInt8, internal_real_mods : UInt8, affect_ignore_lock_real_mods : UInt8, ignore_lock_real_mods : UInt8, affect_internal_virtual_mods : UInt16, internal_virtual_mods : UInt16, affect_ignore_lock_virtual_mods : UInt16, ignore_lock_virtual_mods : UInt16, mouse_keys_dflt_btn : UInt8, groups_wrap : UInt8, access_x_options : UInt16, affect_enabled_controls : UInt32, enabled_controls : UInt32, change_controls : UInt32, repeat_delay : UInt16, repeat_interval : UInt16, slow_keys_delay : UInt16, debounce_delay : UInt16, mouse_keys_delay : UInt16, mouse_keys_interval : UInt16, mouse_keys_time_to_max : UInt16, mouse_keys_max_speed : UInt16, mouse_keys_curve : Int16, access_x_timeout : UInt16, access_x_timeout_mask : UInt32, access_x_timeout_values : UInt32, access_x_timeout_options_mask : UInt16, access_x_timeout_options_values : UInt16, per_key_repeat : UInt8*) : VoidCookie
-	fun xcb_xkb_set_debugging_flags(c : Connection, msg_length : UInt16, affect_flags : UInt32, flags : UInt32, affect_ctrls : UInt32, ctrls : UInt32, message : XkbString8*) : XkbSetDebuggingFlagsCookie
+	fun xcb_xkb_set_debugging_flags(c : Connection, msg_length : UInt16, affect_flags : UInt32, flags : UInt32, affect_ctrls : UInt32, ctrls : UInt32, message : Char*) : XkbSetDebuggingFlagsCookie
 	fun xcb_xkb_set_debugging_flags_reply(c : Connection, cookie : XkbSetDebuggingFlagsCookie, e : GenericError**) : XkbSetDebuggingFlagsReply*
 		fun xcb_xkb_set_debugging_flags_sizeof(_buffer : Void*) : Int32
-	fun xcb_xkb_set_debugging_flags_unchecked(c : Connection, msg_length : UInt16, affect_flags : UInt32, flags : UInt32, affect_ctrls : UInt32, ctrls : UInt32, message : XkbString8*) : XkbSetDebuggingFlagsCookie
+	fun xcb_xkb_set_debugging_flags_unchecked(c : Connection, msg_length : UInt16, affect_flags : UInt32, flags : UInt32, affect_ctrls : UInt32, ctrls : UInt32, message : Char*) : XkbSetDebuggingFlagsCookie
 	fun xcb_xkb_set_device_info(c : Connection, device_spec : XkbDeviceSpec, first_btn : UInt8, n_btns : UInt8, change : UInt16, n_device_led_f_bs : UInt16, btn_actions : XkbAction*, leds : XkbDeviceLedInfo*) : VoidCookie
 	fun xcb_xkb_set_device_info_btn_actions(r : XkbSetDeviceInfoRequest*) : XkbAction*
 		fun xcb_xkb_set_device_info_btn_actions_iterator(r : XkbSetDeviceInfoRequest*) : XkbActionIterator
@@ -2363,8 +2362,8 @@ lib LibXCB
 	fun xcb_xkb_shape_sizeof(_buffer : Void*) : Int32
 	fun xcb_xkb_si_action_end(i : XkbSiActionIterator) : GenericIterator
 	fun xcb_xkb_si_action_next(i : XkbSiActionIterator*)
-	fun xcb_xkb_string8_end(i : XkbString8Iterator) : GenericIterator
-	fun xcb_xkb_string8_next(i : XkbString8Iterator*)
+	fun xcb_xkb_string8_end(i : CharIterator) : GenericIterator
+	fun xcb_xkb_string8_next(i : CharIterator*)
 	fun xcb_xkb_sym_interpret_end(i : XkbSymInterpretIterator) : GenericIterator
 	fun xcb_xkb_sym_interpret_next(i : XkbSymInterpretIterator*)
 	fun xcb_xkb_use_extension(c : Connection, wanted_major : UInt16, wanted_minor : UInt16) : XkbUseExtensionCookie
