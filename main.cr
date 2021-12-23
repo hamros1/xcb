@@ -7,7 +7,7 @@ def create_window(conn, dims, depth, visual, window_class, cursor, map, mask, va
 		visual = XCB_COPY_FROM_PARENT
 	end
 	gc_cookie = xcb_create_window(conn,  depth, result, root, dims.x, dims.y, dims.width, dims.height, 0, window_class, visual, mask, values)
-	error = xcb_request_check(conn,, gc_cookie)
+	error = xcb_request_check(conn, gc_cookie)
 	if error
 		puts "Could not create window. Error code #{error.error_code}"
 	end
