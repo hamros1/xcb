@@ -79,15 +79,173 @@ def render_con(con)
 end
 
 def precalculate_sizes(con, p)
+	if con.layout != L_SPLITH && con.layout != L_SPLITV || p.children <= 0
+		return
+	end
+
+	con.nodes_head.each do |child|
+		percentage = child.percent > 0.0 ? child.percent : 1.0 / p.children
+		assigned += sizes[i++] = lround(percentage * total)
+	end
+
+	int i, assigned = 0
+	total = con_rect_size_in_orientation(con)
+	signal = assigned < total 1 : -1
+	while assigned != total
+		while i < p.children && assigned != total
+			sizes[i] += signal
+			assigned += signal
+			i += 1
+		end
+	end
+
+	return sizes
 end
 
 def render_root(con, fullscreen)
+	if !fullscreen
+		con.nodes_head.each do |output|
+			render_con output
+		end
+	end
+
+	con.nodes_head.each do |output|
+		if con_is_internal(output)
+			next
+		end
+
+		if !content || content.focus_head.empty?
+			puts "Skipping this output because it is currently being destroyed"
+			next
+		end
+
+		workspace = content.focus_head[0]
+		fullscreen = con_get_fullscreen_covering_ws(workspace)
+		workspace.floating_head.each do |floating_windows|
+			if !fullscreen
+				if !fullcreen.window
+					next
+				end
+			end
+
+			floating_child = con_descend_focused(child)
+			if con_find_transient_for_window(floating_child, fullscreen.window.id)
+				puts "Rendering floating child even though in fullscreen mode: floating.transient_for (#{floating_child.window.transient_for}) --> fullscreen.id (#{fullscreen.window.id})"
+			else
+				next
+			end
+			puts "Floatiing child at (#{child.rect.x}, #{child.rect.y}) with #{child.rect.width} x #{child.rect.height}"
+			x_raise_con(child)
+			render(con)
+		end
+	end
 end
 
 def render_output(con)
+	x = con.rect.x
+	y = con.rect.y
+	height = con.rect.height
+
+	con.nodes_head.each do |child|
+		if child.type == CT_CON
+			if content
+				puts "More than one CT_CON on output container"
+				return
+			end 
+			content = child
+		else if child.type != CT_DOCKAREA
+			puts "Child #{child} of type #{child.type} is inside the OUTPUT con"
+			return
+		end
+	end
+
+	if !content
+		puts "Skipping this output because it is currently being destroyed."
+		return
+	end
+
+	ws = con_get_fullscreen_con(content, CF_OUTPUT)
+	if !ws
+		puts "Skipping this output because it is currently being destroyed."
+		return
+	end
+	fullscreen = con_get_fullscreen_con(ws, CF_OUTPUT)
+	if fullscreen
+		fullscreen.rect = con.rect
+		x_raise_con(fullscreen)
+		render_con(fullscreen)
+		return
+	end
+
+	con.nodes_head.each do |child|
+		if child.type != CT_DOCKAREA
+			next
+		end
+
+		child.rect.height = 0
+		child.nodes_head.each do |dockchild|
+			child.rect.height += dockchild.geometry.height
+		end
+
+		height -= child.rect.height
+	end
+
+	con.nodes_head.each do |child|
+		if child.type == CT_CON
+			child.rect.x = x
+			child.rect.y = y
+			child.rect.width = con.rect.width
+			child.rect.height = height
+		end
+
+		child.rect.x = x
+		child.rect.y = y
+		child.rect.width = con.rect.width
+		child.deco_rect.x = 0
+		child.deco_rect.y = 0
+		child.deco_rect.width = 0
+		child.deco_rect.height = 0
+
+		y += child.rect.height
+
+		puts "Child at #{child.rect.x}, #{child.rect.y} with #{child.rect.width} x #{child.rect.height}"
+		x_raise_con(child)
+		render_con(child)
+	end
 end
 
 def render_con_split(con, child, p, i)
+	if con.layout == L_SPLITH
+		child.rect.x = p.x
+		child.rect.y = p.y
+		child.rect.width = p.sizes[i]
+		child.rect.height = p.rect.height
+		p.x += child.rect.width
+	else
+		child.deco_rect.x = 0
+		child.deco_rect.y = 0
+		child.rect.height = p.rect.width
+		child.rect.height = p.sizes[i]
+		p.y += child.rect.height
+	end
+
+	if con_is_leaf(child)
+		if child.border_style == BS_NORMAL
+			child.deco_rect.x = child.rect.x - con.rect.x
+			child.deco_rect.x = child.rect.x - con.rect.x
+
+			child.rect.y = += p.deco_height
+			child.rect.height = += p.deco_height
+
+			child.deco_rect.width = child.rect.width
+			child.deco.rect.height = p.deco_height
+		else
+			child.deco_rect.x = 0
+			child.deco_rect.y = 0
+			child.deco_rect.height = 0
+			child.deco_rect.height = 0
+		end
+	end
 end
 
 def render_con_stacked(con, child, p, i)
