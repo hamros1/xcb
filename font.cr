@@ -202,16 +202,16 @@ def xcb_query_text_width(input, text_len)
 			row = input[i].byte1
 			col = input[i].byte2
 			if row < font_info.min_byte1 ||
-				 row > font_info.max_byte1 ||
-				 col < font_info.min_char_or_byte2 ||
-				 col > font_info.max_char_or_byte2
+					row > font_info.max_byte1 ||
+					col < font_info.min_char_or_byte2 ||
+					col > font_info.max_char_or_byte2
 				next
 			end
 			if !(info.character_width != 0 ||
-				 (info.right_side_bearing | 
-				 info.left_side_bearing |
-				 info.ascent |
-				 info.descent))
+					(info.right_side_bearing | 
+			info.left_side_bearing |
+			info.ascent |
+			info.descent))
 			width += info.character_width
 			end
 		end

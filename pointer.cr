@@ -88,9 +88,9 @@ def modfield_from_keysym
 	keycodes, mod_keycodes = Pointer(LibXCB::Keycode).null
 	symbols = xcb_key_symbols_alloc(conn)
 	if !keycodes = xcb_key_symbols_get_keycode(symbols, keycode) ||
-		 !reply = xcb_get_modifier_mapping_reply(conn, xcb_get_modifier_mapping(conn), nil) ||
-		 reply.keycodes_per_modifier < 1 ||
-		 !mod_keycodes = xcb_get_modifier_mapping_keycodes(reply)
+			!reply = xcb_get_modifier_mapping_reply(conn, xcb_get_modifier_mapping(conn), nil) ||
+			reply.keycodes_per_modifier < 1 ||
+			!mod_keycodes = xcb_get_modifier_mapping_keycodes(reply)
 		xcb_key_symbols_free(symbols)
 		return modfield
 	end
@@ -203,50 +203,50 @@ def track_pointer(loc : Coordinates, pac : PointerAction, pos : LibXCB::XcbPoint
 	grabbed_node = n
 	loop do
 		while !ev = xcb_wait_for_event(conn) xcb_flush(conn) end
-		resp_type = XCB_EVENT_RESPONSE_TYPE(ev)
-		if resp_type = XCB_MOTION_NOTIFY
-			e = evt
-			dtime = e.time - last_motion_time
-			next if dtime < pointer_motion_interval
-			last_motion_time = e.time
-			dx = e.root_x - last_motion_x
-			dy = e.root_y - last_motion_y
-			if pac == ACTION_MOVE
-			else
-				if honor_size_hints
-					resize_client(loc, rh, e.root_x, e.root_y, false)
+			resp_type = XCB_EVENT_RESPONSE_TYPE(ev)
+			if resp_type = XCB_MOTION_NOTIFY
+				e = evt
+				dtime = e.time - last_motion_time
+				next if dtime < pointer_motion_interval
+				last_motion_time = e.time
+				dx = e.root_x - last_motion_x
+				dy = e.root_y - last_motion_y
+				if pac == ACTION_MOVE
 				else
-					resize_client(loc, rh, dx, dy, true)
+					if honor_size_hints
+						resize_client(loc, rh, e.root_x, e.root_y, false)
+					else
+						resize_client(loc, rh, dx, dy, true)
+					end
 				end
+			else if resp_type == BUTTON_RELEASE
+				grabbing = false
+			else
+				handle_event(evt)
 			end
-		else if resp_type == BUTTON_RELEASE
+			break if grabbing && !grabbed_node
+		end
+		xcb_ungrab_pointer(conn, XCB_CURRENT_TIME)
+		if !grabbed_node
 			grabbing = false
-		else
-			handle_event(evt)
+			return
 		end
-		break if grabbing && !grabbed_node
-	end
-	xcb_ungrab_pointer(conn, XCB_CURRENT_TIME)
-	if !grabbed_node
-		grabbing = false
-		return
-	end
-	if pac == ACTION_MOVE
-		puts "pointer action move end #{loc.monitor.id} #{loc.desktop.id} #{n.id} move end"
-	else if pac == ACTION_RESIZE_CORNER
-		puts "pointer action #{loc.monitor.id} #{loc.desktop.id} #{n.id} resize"
-	else if pac == ACTION_RESIZE_SIDE
-		puts "pointer action #{loc.monitor.id} #{loc.desktop.id} #{n.id} resize end"
-	end
-	r = get_rectangle(nil, nil, n)
-	put "node_geometry #{loc.monitor.id} #{loc.desktop.id} #{loc.node.id} #{r.width} #{r.height} #{r.x} #{r.y}"
-	if (pac == ACTION_MOVE && is_tiled(n.client)) || (pac == ACTION_RESIZE_CORNER || pac == ACTION_RESIZE_SIDE && n.client.state == STATE_TILED)
-		f = loc.desktop.root[0]
-		while f
-			next if f == n || !f.client || is_tiled(f.client)
-			r = f.client.tiled_rectangle
-			puts "node_geometry #{loc.monitor.id} #{loc.desktop.id} #{f.id} #{r.width} #{r.height} #{r.x} #{r.y}"
-			f = f.shift
+		if pac == ACTION_MOVE
+			puts "pointer action move end #{loc.monitor.id} #{loc.desktop.id} #{n.id} move end"
+		else if pac == ACTION_RESIZE_CORNER
+			puts "pointer action #{loc.monitor.id} #{loc.desktop.id} #{n.id} resize"
+		else if pac == ACTION_RESIZE_SIDE
+			puts "pointer action #{loc.monitor.id} #{loc.desktop.id} #{n.id} resize end"
+		end
+		r = get_rectangle(nil, nil, n)
+		put "node_geometry #{loc.monitor.id} #{loc.desktop.id} #{loc.node.id} #{r.width} #{r.height} #{r.x} #{r.y}"
+		if (pac == ACTION_MOVE && is_tiled(n.client)) || (pac == ACTION_RESIZE_CORNER || pac == ACTION_RESIZE_SIDE && n.client.state == STATE_TILED)
+			f = loc.desktop.root[0]
+			while f
+				next if f == n || !f.client || is_tiled(f.client)
+				r = f.client.tiled_rectangle
+				puts "node_geometry #{loc.monitor.id} #{loc.desktop.id} #{f.id} #{r.width} #{r.height} #{r.x} #{r.y}"
+				f = f.shift
+			end
 		end
 	end
-end

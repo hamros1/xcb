@@ -133,7 +133,7 @@ def render_root(con, fullscreen)
 				puts "Rendering floating child even though in fullscreen mode: floating.transient_for (#{floating_child.window.transient_for}) --> fullscreen.id (#{fullscreen.window.id})"
 			else
 				next
-			end
+				end
 			puts "Floatiing child at (#{child.rect.x}, #{child.rect.y}) with #{child.rect.width} x #{child.rect.height}"
 			x_raise_con(child)
 			render(con)

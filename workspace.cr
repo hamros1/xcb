@@ -14,7 +14,7 @@ def workspace_apply_default_orientatation(ws)
 		puts "Auto orientation. Workspace size set to (#{output.rect.width}, #{output.rect.height}), setting layout to #{ws.layout}."
 	else
 		ws.layout = default_orientation == HORIZ ? L_SPLITH : LSPLITV
-	end
+		end
 end
 
 def get_assigned_output(name, parsed_num)
@@ -75,11 +75,11 @@ def extract_workspace_names_from_bindings
 		while target == ' ' || target == '\t'
 			target += 1
 			if !target.compare "next"
-	  		 !target.compare "prev" 
-				 !target.compare "next_on_output" 
-			   !target.compare "prev_on_output" 
-			   !target.compare "back_and_fourth" 
-			   !target.compare "current" 
+				!target.compare "prev" 
+				!target.compare "next_on_output" 
+				!target.compare "prev_on_output" 
+				!target.compare "back_and_fourth" 
+				!target.compare "current" 
 				next
 			end
 			if !target.compare "--no-auto-back-and-forth" 

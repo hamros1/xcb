@@ -62,15 +62,15 @@ def xcb_get_preferred_window_type(reply)
 
 	(xcb_property_value_length(reply) / (reply.format / 8)).times do |i|
 		if atoms[i] == A__NET_WM_WINDOW_TYPE_NORMAL ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_DIALOG ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_UTILTY ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_TOOLBAR ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_SPLASH ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_MENU ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_DROPDOWN_MENU ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_POPUP_MENU ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_TOOLTIP ||
-			 atoms[i] == A__NET_WM_WINDOW_TYPE_NOTIFICATION
+				atoms[i] == A__NET_WM_WINDOW_TYPE_DIALOG ||
+				atoms[i] == A__NET_WM_WINDOW_TYPE_UTILTY ||
+				atoms[i] == A__NET_WM_WINDOW_TYPE_TOOLBAR ||
+				atoms[i] == A__NET_WM_WINDOW_TYPE_SPLASH ||
+				atoms[i] == A__NET_WM_WINDOW_TYPE_MENU ||
+				atoms[i] == A__NET_WM_WINDOW_TYPE_DROPDOWN_MENU ||
+				atoms[i] == A__NET_WM_WINDOW_TYPE_POPUP_MENU ||
+				atoms[i] == A__NET_WM_WINDOW_TYPE_TOOLTIP ||
+				atoms[i] == A__NET_WM_WINDOW_TYPE_NOTIFICATION
 			return atoms[i]
 		end
 	end

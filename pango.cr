@@ -1,25 +1,25 @@
 @[Link("pango-1.0")
 	lib Pango
 		type GData = Void*
-		type Cairo = Void*
+			type Cairo = Void*
+			type CairoFontOptions = Void*
+			type PangoContext = Void*
+			alias PangoCairoShapeRendererFunc = (Cairo, PangoAttrShape*, Bool, Void -> Void)
 		type CairoFontOptions = Void*
-		type PangoContext = Void*
-		alias PangoCairoShapeRendererFunc = (Cairo, PangoAttrShape*, Bool, Void -> Void)
-		type CairoFontOptions = Void*
-		type PangoCairoFont = Void*
-		type PangoCairoFontMap = Void*
-		type CairoScaledFont = Void*
-		type PangoCairoFont = Void*
-		type PangoCairoFontMap = Void*
-		type PangoFontDescription = Void*
-		type PangoTabArray = Void*
-		type PangoLanguage = Void*
-		type PangoLayoutIter = Void*
-		alias PangoLayoutRun = PangoGlyphItem
+			type PangoCairoFont = Void*
+			type PangoCairoFontMap = Void*
+			type CairoScaledFont = Void*
+			type PangoCairoFont = Void*
+			type PangoCairoFontMap = Void*
+			type PangoFontDescription = Void*
+			type PangoTabArray = Void*
+			type PangoLanguage = Void*
+			type PangoLayoutIter = Void*
+			alias PangoLayoutRun = PangoGlyphItem
 		type HbFaceT = Void*
-		type HbFontT = Void*
+			type HbFontT = Void*
 
-		enum CairoFontType
+			enum CairoFontType
 				CairoFontTypeoy    = 0
 				CairoFontTypeFt     = 1
 				CairoFontTypeWin32  = 2

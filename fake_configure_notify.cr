@@ -12,5 +12,5 @@ def fake_configure_notfiy(conn, rect, window, border_width)
 		override_redirect: false
 	)
 	LibXCB.xcb_send_event(conn, false, window, XCB_EVENT_MASK_STRUCTURE_NOTIFY, pointerof(event).as(Char*)
-	xcb_flush(conn)
+											 xcb_flush(conn)
 end

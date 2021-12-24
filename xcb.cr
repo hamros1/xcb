@@ -1,34 +1,34 @@
 @[Link("xcb")]
 lib LibXCB
 	alias Atom = UInt32
-  alias Button = UInt8
-  alias Colormap = UInt32
-  alias Connection = Void
-  alias Cursor = UInt32
-  alias Drawable = UInt32
-  alias Font = UInt32
-  alias Fontable = UInt32
-  alias Gcontext = UInt32
+	alias Button = UInt8
+	alias Colormap = UInt32
+	alias Connection = Void
+	alias Cursor = UInt32
+	alias Drawable = UInt32
+	alias Font = UInt32
+	alias Fontable = UInt32
+	alias Gcontext = UInt32
 	alias Gravity = UInt32
-  alias Keycode32 = UInt32
-  alias Keycode = UInt8
-  alias Keysym = UInt32
-  alias Pixmap = UInt32
-  alias SpecialEvent = Void
-  alias Timestamp = UInt32
-  alias Visualid = UInt32
-  alias Window = UInt32
-  alias XkbBellClassSpec = UInt16
-  alias XkbDeviceSpec = UInt16
-  alias XkbIdSpec = UInt16
-  alias XkbLedClassSpec = UInt16
-  alias XkbString8 = Char
+	alias Keycode32 = UInt32
+	alias Keycode = UInt8
+	alias Keysym = UInt32
+	alias Pixmap = UInt32
+	alias SpecialEvent = Void
+	alias Timestamp = UInt32
+	alias Visualid = UInt32
+	alias Window = UInt32
+	alias XkbBellClassSpec = UInt16
+	alias XkbDeviceSpec = UInt16
+	alias XkbIdSpec = UInt16
+	alias XkbLedClassSpec = UInt16
+	alias XkbString8 = Char
 
 	type Visualid = Pointer(Void)
 	type GetPropertyCookie = Pointer(Void)
 	type GetPropertyReply = Pointer(Void)
 	type InternAtomCookie = Pointer(Void)
-	
+
 	fun GetProperty(Pointer(Connection), UInt8, Window, Atom, Atom, UInt32, UInt32) : GetPropertyCookie 
 
 	X_PROTOCOL = 11
@@ -53,30 +53,30 @@ lib LibXCB
 
 	type Connection = Void*
 
-  struct ScreenIterator
-    data : Pointer(Screen)
-    rem : Int32
-    index : Int32
-  end
+		struct ScreenIterator
+			data : Pointer(Screen)
+			rem : Int32
+			index : Int32
+	end
 
-  struct Screen
-    root : Window
-    default_colormap : Colormap
-    white_pixel : UInt32
-    black_pixel : UInt32
-    current_input_masks : UInt32
-    width_in_pixels : UInt16
-    height_in_pixels : UInt16
-    width_in_millimeters : UInt16
-    height_in_millimeters : UInt16
-    min_installed_maps : UInt16
-    max_installed_maps : UInt16
-    root_visual : XcbVisualidT
-    backing_stores : UInt8
-    save_unders : UInt8
-    root_depth : UInt8
-    allowed_depths_len : UInt8
-  end
+	struct Screen
+		root : Window
+		default_colormap : Colormap
+		white_pixel : UInt32
+		black_pixel : UInt32
+		current_input_masks : UInt32
+		width_in_pixels : UInt16
+		height_in_pixels : UInt16
+		width_in_millimeters : UInt16
+		height_in_millimeters : UInt16
+		min_installed_maps : UInt16
+		max_installed_maps : UInt16
+		root_visual : XcbVisualidT
+		backing_stores : UInt8
+		save_unders : UInt8
+		root_depth : UInt8
+		allowed_depths_len : UInt8
+	end
 
 	struct GenericIterator 
 		data :    Pointer(Void)
@@ -148,29 +148,29 @@ lib LibXCB
 		data :    Pointer(Char)
 	end
 
-  fun xcb_grab_button(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : UInt8, x9 : UInt16) : VoidCookie
+	fun xcb_grab_button(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : UInt8, x9 : UInt16) : VoidCookie
 
-  fun xcb_grab_button_checked(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x8 : Cursor, x9 : UInt8, x10 : UInt16) : VoidCookie
+	fun xcb_grab_button_checked(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x8 : Cursor, x9 : UInt8, x10 : UInt16) : VoidCookie
 
-  fun xcb_grab_key(x0  : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : Keycode, x5 : UInt8, x6 : UInt8) : VoidCookie
+	fun xcb_grab_key(x0  : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : Keycode, x5 : UInt8, x6 : UInt8) : VoidCookie
 
-  fun xcb_grab_key_checked(x0  : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : Keycode, x5 : UInt8, x6 : UInt8) : VoidCookie
+	fun xcb_grab_key_checked(x0  : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : Keycode, x5 : UInt8, x6 : UInt8) : VoidCookie
 
-  fun xcb_grab_keyboard(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Timestamp, x4 : UInt8, x5 : UInt8) : GrabKeyboardCookie
+	fun xcb_grab_keyboard(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Timestamp, x4 : UInt8, x5 : UInt8) : GrabKeyboardCookie
 
-  fun xcb_grab_keyboard_reply(x0 : Pointer(Connection), x1 : GrabKeyboardCookie, x2 : Pointer(GenericError*)) : Pointer(GrabKeyboardReply)
+	fun xcb_grab_keyboard_reply(x0 : Pointer(Connection), x1 : GrabKeyboardCookie, x2 : Pointer(GenericError*)) : Pointer(GrabKeyboardReply)
 
-  fun xcb_grab_keyboard_unchecked(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Timestamp, x4 : UInt8, x5 : UInt8) : GrabKeyboardCookie
+	fun xcb_grab_keyboard_unchecked(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Timestamp, x4 : UInt8, x5 : UInt8) : GrabKeyboardCookie
 
-  fun xcb_grab_pointer(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : Timestamp) : GrabPointerCookie
+	fun xcb_grab_pointer(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : Timestamp) : GrabPointerCookie
 
-  fun xcb_grab_pointer_reply(x0 : Pointer(Connection), x1 : GrabPointerCookie, x2 : Pointer(GenericError*)) : Pointer(GrabPointerReply)
+	fun xcb_grab_pointer_reply(x0 : Pointer(Connection), x1 : GrabPointerCookie, x2 : Pointer(GenericError*)) : Pointer(GrabPointerReply)
 
-  fun xcb_grab_pointer_unchecked(x0 : Connection, x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : Timestamp) : GrabPointerCookie
+	fun xcb_grab_pointer_unchecked(x0 : Connection, x1 : UInt8, x2 : Window, x3 : UInt16, x4 : UInt8, x5 : UInt8, x6 : Window, x7 : Cursor, x8 : Timestamp) : GrabPointerCookie
 
-  fun xcb_grab_server(x0 : Pointer(Connection)) : VoidCookie
+	fun xcb_grab_server(x0 : Pointer(Connection)) : VoidCookie
 
-  fun xcb_grab_server_checked(x0 : Pointer(Connection)) : VoidCookie
+	fun xcb_grab_server_checked(x0 : Pointer(Connection)) : VoidCookie
 
 	fun xcb_flush(x0 : Pointer(Connection)) : Int32 
 
@@ -186,13 +186,13 @@ lib LibXCB
 
 	type SpecialEvent = Void*
 
-	fun xcb_poll_for_special_event(x0 : Pointer(Connection), x1 : Pointer(SpecialEvent)) : Pointer(GenericEvent)
+		fun xcb_poll_for_special_event(x0 : Pointer(Connection), x1 : Pointer(SpecialEvent)) : Pointer(GenericEvent)
 
 	fun xcb_wait_for_special_event(x0 : Pointer(Connection), x1 : Pointer(SpecialEvent)) : Pointer(GenericEvent)
 
 	type Extension = Void*
 
-	fun xcb_register_for_special_xge(x0 : Pointer(Connection) , x1 : Pointer(Extension), x2 : UInt32, x3 : Pointer(UInt32)) : Pointer(SpecialEvent)
+		fun xcb_register_for_special_xge(x0 : Pointer(Connection) , x1 : Pointer(Extension), x2 : UInt32, x3 : Pointer(UInt32)) : Pointer(SpecialEvent)
 
 	fun xcb_unregister_for_special_event(x0 : Pointer(Connection) , x1 : Pointer(SpecialEvent)) : Void 
 

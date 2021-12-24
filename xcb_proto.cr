@@ -314,33 +314,33 @@ lib LibXCB
 	end
 
 	struct KeyPressEvent
-    response_type : UInt8
-    detail : KeyCode
-    sequence : UInt16
-    time : Timestamp
-    root : Window
-    event : Window
-    child : Window
-    root_x : Int16
-    root_y : Int16
-    event_x : Int16
-    event_y : Int16
-    state : UInt16
-    same_screen : UInt8
-    pad0 : UInt8
+		response_type : UInt8
+		detail : KeyCode
+		sequence : UInt16
+		time : Timestamp
+		root : Window
+		event : Window
+		child : Window
+		root_x : Int16
+		root_y : Int16
+		event_x : Int16
+		event_y : Int16
+		state : UInt16
+		same_screen : UInt8
+		pad0 : UInt8
 	end
 
 	type KeyReleaseEvent = KeyPressEvent
 
-struct MappingNotifyEvent
-     response_type : UInt8
-     pad0 : UInt8
-     sequence : UInt16
-     request : UInt8
-     first_keycode : KeyCode
-     count : UInt8
-     pad1 : UInt8
-end
+	struct MappingNotifyEvent
+		response_type : UInt8
+		pad0 : UInt8
+		sequence : UInt16
+		request : UInt8
+		first_keycode : KeyCode
+		count : UInt8
+		pad1 : UInt8
+	end
 
 	struct Setup
 		status : UInt8
@@ -417,7 +417,7 @@ end
 	end
 
 	struct InternAtomReply
-response_type : UInt8
+		response_type : UInt8
 		pad0 : UInt8
 		sequence : UInt16
 		length : UInt32
@@ -432,49 +432,49 @@ response_type : UInt8
 		sequence : UInt32
 	end
 
-	       struct GetSelectionOwnerReply
-           response_type : UInt8
-           pad0 : UInt8
-           sequence : UInt16
-           length : UInt32
-           owner : Window
-end
+	struct GetSelectionOwnerReply
+		response_type : UInt8
+		pad0 : UInt8
+		sequence : UInt16
+		length : UInt32
+		owner : Window
+	end
 
-				 struct PropertyNotifyEvent
-					 response_type : UInt8
-					 pad0 : UInt8
-					 sequence : UInt16
-					 window : Window
-					 atom : Atom
-					 time : Timestamp
-					 state : UInt8
-					 pad1 : StaticArray(UInt8, 3)
-				 end 
+	struct PropertyNotifyEvent
+		response_type : UInt8
+		pad0 : UInt8
+		sequence : UInt16
+		window : Window
+		atom : Atom
+		time : Timestamp
+		state : UInt8
+		pad1 : StaticArray(UInt8, 3)
+	end 
 
-				 struct GetGeometryReply
-					 response_type : UInt8
-					 depth : UInt8
-					 sequence : UInt16
-					 length : UInt32
-					 root : Window
-					 x : Int16
-					 y : Int16
-					 width : UInt16
-					 height : UInt16
-					 border_width : UInt16
-					 pad0 : StaticArray(UInt8, 2)
-				 end
+	struct GetGeometryReply
+		response_type : UInt8
+		depth : UInt8
+		sequence : UInt16
+		length : UInt32
+		root : Window
+		x : Int16
+		y : Int16
+		width : UInt16
+		height : UInt16
+		border_width : UInt16
+		pad0 : StaticArray(UInt8, 2)
+	end
 
-				 struct QueryExtensionReply
-					 response_type : UInt8
-					 pad0 : UInt8
-					 sequence : UInt16
-					 length : UInt32
-					 present : UInt8
-					 major_opcode : UInt8
-					 first_event : UInt8
-					 first_error : UInt8
-				 end
+	struct QueryExtensionReply
+		response_type : UInt8
+		pad0 : UInt8
+		sequence : UInt16
+		length : UInt32
+		present : UInt8
+		major_opcode : UInt8
+		first_event : UInt8
+		first_error : UInt8
+	end
 
 	fun xcb_setup_roots_iterator(x0 : Pointer(Setup)) : ScreenIterator
 	fun xcb_change_window_attributes(x0 : Pointer(Connection), x1 : Window, x2 : UInt32, x3 : Pointer(Void))
@@ -485,11 +485,11 @@ end
 	fun xcb_flush(x0 : Pointer(Connection)) : Int32
 	fun xcb_create_window(x0 : Pointer(Connection), x1 : UInt8, x2 : Window, x3 : Window, x4 : Int16, x5 : Int16, x6 : UInt16, x7 : UInt16, x8 : UInt16, x9 : UInt16, x10 : Int64, x11 : UInt32, x12 : Pointer(Void)) : VoidCookie
 	fun xcb_change_window_attributes_checked(x0 : Pointer(Connection), x1 : Window, x2 : UInt32, x3 : Pointer(Void)) : VoidCookie
-  fun xcb_intern_atom(x0 : Pointer(Connection), x1 : UInt8, x2 : UInt16, x3 : Pointer(Char)) : InternAtomCookie
+	fun xcb_intern_atom(x0 : Pointer(Connection), x1 : UInt8, x2 : UInt16, x3 : Pointer(Char)) : InternAtomCookie
 	fun xcb_intern_atom_reply(x0 : Pointer(Connection), x1 : InternAtomCookie, x2 : Pointer(GenericError*)) : Pointer(InternAtomReply)
 	fun xcb_get_selection_owner(x0 : Pointer(Connection), x1 : Atom) : GetSelectionOwnerCookie
 	fun xcb_get_selection_owner_reply(x0 : Pointer(Connection), x1 : GetSelectionOwnerCookie, x2 : Pointer(GenericError*)) : Pointer(GetSelectionOwnerReply)
 	fun xcb_set_selection_owner(x0 : Pointer(Connection), x1 : Window, x2 : Atom, x3 : Timestamp) : VoidCookie
 	fun xcb_get_geometry_reply(x0 : Pointer(Connection), x1 : GetGeometryCookie, x2 : Pointer(GenericError*)) : Pointer(GetGeometryReply)
 	fun xcb_get_extension_data(x0 : Pointer(Connection), x1 : Pointer(Extension)) : Pointer(QueryExtensionReply)
-end
+	end

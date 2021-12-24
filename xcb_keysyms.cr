@@ -2,7 +2,7 @@
 lib LibXCB
 	type KeySymbols = Void*
 
-	fun xcb_key_symbols_alloc(Pointer(Connection)) : Pointer(KeySymbols)
+		fun xcb_key_symbols_alloc(Pointer(Connection)) : Pointer(KeySymbols)
 
 	fun xcb_key_symbols_free(Pointer(KeySymbols)) : Void
 

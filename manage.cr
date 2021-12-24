@@ -76,7 +76,7 @@ def manage_window(window, cookie, needs_to_be_mapped)
 		xcb_discard_reply(conn, geomc.sequence)
 		return
 	end
-	
+
 	if !geom = xcb_get_geometry_reply(conn, geomc, 0)
 		puts "Could not get geometry"
 		return
@@ -101,7 +101,7 @@ def manage_window(window, cookie, needs_to_be_mapped)
 	xcb_get_property(conn, false, window, NetStartupId, XCB_PROPERTY_TYPE_ANY, 0, 512)
 	xcb_get_property(conn, false, window, MotifWmHints, XCB_PROPERTY_TYPE_ANY, 0, 128)
 	xcb_get_property(conn, false, window, NetWmUserTime, XCB_PROPERTY_TYPE_ANY, 0, max(UInt32)
-	xcb_get_property(conn, false, window, NetWmDesktop, XCB_PROPERTY_TYPE_ANY, 0, max(UInt32)
-	xcb_get_property(conn, false, window, XCB_ATOM_WM_CLIENT_MACHINE, XCB_PROPERTY_TYPE_ANY, 0, max(UInt32)
-	xcb_get_property(conn, false, window, NetWmIcon, XCB_PROPERTY_TYPE_ANY, 0, max(UInt32))
+									xcb_get_property(conn, false, window, NetWmDesktop, XCB_PROPERTY_TYPE_ANY, 0, max(UInt32)
+													xcb_get_property(conn, false, window, XCB_ATOM_WM_CLIENT_MACHINE, XCB_PROPERTY_TYPE_ANY, 0, max(UInt32)
+															xcb_get_property(conn, false, window, NetWmIcon, XCB_PROPERTY_TYPE_ANY, 0, max(UInt32))
 end

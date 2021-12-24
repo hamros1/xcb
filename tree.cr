@@ -51,19 +51,19 @@ def tree_close_internal(con, kill_window, dont_kill_parent)
 		if kill_window != DONT_KILL_WINDOW
 			x_window_kill(con.window.id, kill_window)
 			return false
-	else
-		xcb_change_window_attributes(conn, con.window.id, XCB_CW_EVENT_MASK, [XCB_NONE])
-		xcb_unmap_window(con, con.window.id)
-		cookie = xcb_reparent_window(conn, con.window.id, root, con.rect.x, con.rect.y)
-		add_ignore_event(cookie.sequence, 0)
-		data = [XCB_ICCCM_WM_STATE_WITHDRAWN, XCB_NONE]
-		cookie = xcb_change_property(conn, XCB_PROP_MODE_REPLACE, con.window.id, A_WM_STATE, A_WM_STATE, 32, 2, data)
-		xcb_change_save_set(conn, XCB_SET_MODE_DELETE, con.window.id)
-		if shape_supported
-			xcb_shape_select_input(conn, con.window.id, false)
+		else
+			xcb_change_window_attributes(conn, con.window.id, XCB_CW_EVENT_MASK, [XCB_NONE])
+			xcb_unmap_window(con, con.window.id)
+			cookie = xcb_reparent_window(conn, con.window.id, root, con.rect.x, con.rect.y)
+			add_ignore_event(cookie.sequence, 0)
+			data = [XCB_ICCCM_WM_STATE_WITHDRAWN, XCB_NONE]
+			cookie = xcb_change_property(conn, XCB_PROP_MODE_REPLACE, con.window.id, A_WM_STATE, A_WM_STATE, 32, 2, data)
+			xcb_change_save_set(conn, XCB_SET_MODE_DELETE, con.window.id)
+			if shape_supported
+				xcb_shape_select_input(conn, con.window.id, false)
+			end
+			add_ignore_event(cookie.sequence)
 		end
-		add_ignore_event(cookie.sequence)
-	end
 		ipc_send_window_event("close", con)
 		window_free(con.window)
 		con.window = nil
@@ -120,10 +120,10 @@ def tree_split(con, orientation)
 	parent = con.parent
 	con_force_split_parents_redraw(con)
 	if con_num_children(parent) == 1 &&
-		 (parent.layout == L_SPLITH ||
-		 parent.layout == L_SPLITV)
-		parent.layout = orientation == HORIZ ? L_SPLITH : L_SPLITV
-		return
+			(parent.layout == L_SPLITH ||
+		parent.layout == L_SPLITV)
+	parent.layout = orientation == HORIZ ? L_SPLITH : L_SPLITV
+	return
 	end
 	puts "Splitting in orientation #{orientation}"
 	new = con_new(nil, nil)
@@ -137,7 +137,7 @@ def level_up
 	end
 
 	if focused.parent.type != CT_CON &&
-		 focused.parent.type != CT_WORKSPACE
+			focused.parent.type != CT_WORKSPACE
 		focused.type = CT_WORKSPACE
 		puts "'focus parent': Focus is already on the workspace, cannot go higher than that"
 		return false
@@ -249,9 +249,9 @@ end
 def tree_flatten(con)
 	puts "Checking if I can flatten con = #{con} / #{con.name}"
 	if con.type != CT_CON ||
-		 parent.layout == L_OUTPUT ||
-		 con.window
-		 recurse
+			parent.layout == L_OUTPUT ||
+			con.window
+			recurse
 	end
 	child = con.nodes_head[0]
 	if child || child.shift
@@ -259,12 +259,12 @@ def tree_flatten(con)
 	end
 	puts "child = #{child}, con = #{con}, parent = #{parent}"
 	if !con_is_split(con) ||
-		 !con_is_split(child) ||
-		 (con.layout != LSPLITH && con.layout != LSPLITV) ||
-		 (child.layout != L_SPLITH && child.layout != LSPLITV) ||
-		 con_orientation(con) == con_orientation(child) ||
-		 con_orietation(child) != con_orietation(parent)
-		 recurse
+			!con_is_split(child) ||
+			(con.layout != LSPLITH && con.layout != LSPLITV) ||
+			(child.layout != L_SPLITH && child.layout != LSPLITV) ||
+			con_orientation(con) == con_orientation(child) ||
+			con_orietation(child) != con_orietation(parent)
+			recurse
 	end
 	puts "Alright, I have to flatten this situation now, Stay calm"
 	focus_next = child.focus_head[0]
@@ -281,7 +281,7 @@ def tree_flatten(con)
 	end
 	puts "Re-attached all"
 	if focus_next &&
-		 focus_head[0] == con
+			focus_head[0] == con
 		puts "Restoring focus to focus_next=#{focus_next}"
 		parent.focus_head.pop focused
 		parent.focus_head.insert(0, focused)

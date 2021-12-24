@@ -46,8 +46,8 @@ def get_output_containing
 		end
 		puts "Comparing x=#{x} y=#{y} with x=#{output.x} and y=#{output.y} width #{output.width} height #{output.height}"
 		if x >= output.x && x < (output.x + output.width) &&
-			 y >= output.y && y < (output.y + output.height)
-			 return output
+				y >= output.y && y < (output.y + output.height)
+				return output
 		end
 	end
 end
@@ -65,8 +65,8 @@ def get_output_with_dimensions
 		next if !output.active
 		puts "Comparing x=#{rect.x} y=#{rect.y} #{rect.width}x#{rect.height} with x=#{output.rect.x} and y= #{output.rect.y} #{output.rect.width}x#{output.rect.height}"
 		if rect.x == output.rect.x && rect.width == output.rect.width &&
-			 rect.y == output.rect.y && rect.height == output.rect.height
-			return output
+				rect.y == output.rect.y && rect.height == output.rect.height
+				return output
 		end
 	end
 end
@@ -127,15 +127,15 @@ def get_output_next(direction, current, close_far)
 		other = output.rect
 
 		if (direction == D_RIGHT && other.x > cur.x) ||
-			 (direction == D_LEFT && other.x < cur.x)
+				(direction == D_LEFT && other.x < cur.x)
 			if (other.y + other.height) <= cur.y ||
-				 (cur.y + cur.height) <= other.y
+					(cur.y + cur.height) <= other.y
 				next
 			end
 		else if (direction == D_DOWN && other.y > cur.y) ||
-						(direction == D_UP && other.y < cur.y)
+			(direction == D_UP && other.y < cur.y)
 			if (other.x + other.width <= cur.x) ||
-				 (cur.x + cur.width) <= other.x
+					(cur.x + cur.width) <= other.x
 				next
 			end
 		else
@@ -149,17 +149,17 @@ def get_output_next(direction, current, close_far)
 
 		if close_far == CLOSEST_OUTPUT
 			if (direction == D_RIGHT && other.x < best.rect.x) ||
-				 (direction == D_LEFT && other.x > best.rect.x) ||
-				 (direction == D_DOWN && other.y < best.rect.y) ||
-				 (direction == D_UP && other.y > best.rect.y)
+					(direction == D_LEFT && other.x > best.rect.x) ||
+					(direction == D_DOWN && other.y < best.rect.y) ||
+					(direction == D_UP && other.y > best.rect.y)
 				best = output
 				next
 			end
 		else
 			if (direction == D_RIGHT && other.x > best.rect.x) ||
-			(direction == D_LEFT && other.x < best.rect.x) ||
-			(direction == D_DOWN && other.y > best.rect.y) ||
-			(direction == D_UP && other.y < best.rect.y)
+					(direction == D_LEFT && other.x < best.rect.x) ||
+					(direction == D_DOWN && other.y > best.rect.y) ||
+					(direction == D_UP && other.y < best.rect.y)
 				best = output
 				next
 			end
@@ -172,11 +172,11 @@ end
 def create_root_output(conn)
 	output_name = "xroot-0".as(Array(String))
 	s = Output.new(active: false,
-								 rect: {x: 0, y: 0,
-								 width: root_screen.width_in_pixels,
-								 height: root_screen.height_in_pixels,
-								 names_head: Deque.new(output_name)})
-	return s
+								rect: {x: 0, y: 0,
+								width: root_screen.width_in_pixels,
+								height: root_screen.height_in_pixels,
+								names_head: Deque.new(output_name)})
+								return s
 end
 
 def output_init_con(output)
@@ -352,10 +352,10 @@ def handle_output(conn, id, output, cts, res)
 		return
 	end
 	updated = (
-			update_if_necessary(pointerof(new.rect.x), crtc.x) |
-			update_if_necessary(pointerof(new.rect.y), crtc.y) |
-			update_if_necessary(pointerof(new.rect.width), crtc.width) |
-			update_if_necessary(pointerof(new.rect.height), crtc.height)
+		update_if_necessary(pointerof(new.rect.x), crtc.x) |
+		update_if_necessary(pointerof(new.rect.y), crtc.y) |
+		update_if_necessary(pointerof(new.rect.width), crtc.width) |
+		update_if_necessary(pointerof(new.rect.height), crtc.height)
 	)
 	new.active = (new.rect.width != 0 && new.rect.height != 0)
 	if !new.active
