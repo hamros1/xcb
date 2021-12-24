@@ -111,26 +111,98 @@ def modfield_from_keysym
 	return modfield
 end
 
-def get_handle
+def get_handle(n, pos, pac)
+	rh = HANDLE_BOTTOM_RIGHT
+	rect = get_rectangle(nil, nil,, n)
+	if pac == ACTION_RESIZE_SIDE
+		w = rect.width
+		h = rect.height
+		ratio = w / h
+		x = pos.x - rect.x
+		y = pos.y - rect.y
+		diag_a = ratio * y
+		diag_b = w - diag_a
+		if x < diag_a
+			if x < diag_b
+				rh = HANDLE_LEFT
+			else
+				rh = HANDLE_BOTTOM
+			end
+		else
+			if x < diag_b
+				rh = HANDLE_TOP
+			else
+				rh = HANDLE_RIGHT
+			end
+		end
+	else if pac == ACTION_RESIZE_CORNER
+		mid_x = rect.x + (rect.width / 2)
+		mid_y = rect.y + (rect.height / 2)
+		if pos.x > mid_x
+			if pos.y > mid_y
+				rh = HANDLE_BOTTOM_RIGHT
+			else
+				rh = HANDLE_TOP_RIGHT
+			end
+		else
+			if pos.y > mid_y
+				HANDLE_BOTTOM_LEFT
+			else
+				rh = HANDLE_TOP_LEFT
+			end
+		end
+	end
+	rh
 end
 
 def grab_pointer(pac)
+	win = XCB_NONE
+	pos = query_pointer(win)
+	if loc = locate_window(win)
+		if pac == ACTION_FOCUS
+			m = monitor_from_point(pos)
+			if m && m != mon && (win == XCB_NONE || win.root)
+				focus_node(m, m.desk, m.desk.focus)
+				return true
+			end
+		end
+		return false
+	end
+	if pac == ACTION_FOCUS
+		if loc.node != mon.desk.focus
+			focus_node(loc.monitor, loc.desktop, loc.node)
+			return true
+		else if focus_follows_pointer
+			stack(loc.desktop, loc.node, true)
+		end
+		return false
+	end 
+	return true if loc.node.client.state == STATE_FULLSCREEN
+	if !reply || reply.status != XCB_GRAB_STATUS_SUCCESS
+		return true
+	end
+
+	if pac == ACTION_MOVE
+		puts "pointer_action #{loc.monitor.id} #{loc.desktop.id} #{loc.node.id} move begin"
+	else if pac == ACTION_RESIZE_CORNER
+		puts "pointer_aciton #{loc.monitor.id} #{loc.desktop.id} #{loc.node.id} resize_corner begin"
+	else if pac == ACTION_RESIZE_SIDE
+		puts "pointer_action #{loc.monitor.id} #{loc.desktopid} #{loc.node.id} resize_side begin"
+	end
+	track_pointer(loc, pac, pos)
+	return true
 end
 
 def track_pointer(loc : Coordinates, pac : PointerAction, pos : LibXCB::XcbPoint)
 	n = loc.node
 	rh = get_handle(loc.node, pos, pac)
-
 	last_motion_x = pos.x
 	last_motion_y = pos.y
 	last_motion_time = 0
-
 	grabbing = true
 	grabbed_node = n
-
 	loop do
 		while !ev = xcb_wait_for_event(conn) xcb_flush(conn) end
-
 		resp_type = XCB_EVENT_RESPONSE_TYPE(ev)
 		if resp_type = XCB_MOTION_NOTIFY
 			e = evt
@@ -154,14 +226,11 @@ def track_pointer(loc : Coordinates, pac : PointerAction, pos : LibXCB::XcbPoint
 		end
 		break if grabbing && !grabbed_node
 	end
-
 	xcb_ungrab_pointer(conn, XCB_CURRENT_TIME)
-
 	if !grabbed_node
 		grabbing = false
 		return
 	end
-
 	if pac == ACTION_MOVE
 		puts "pointer action move end #{loc.monitor.id} #{loc.desktop.id} #{n.id} move end"
 	else if pac == ACTION_RESIZE_CORNER
@@ -169,11 +238,8 @@ def track_pointer(loc : Coordinates, pac : PointerAction, pos : LibXCB::XcbPoint
 	else if pac == ACTION_RESIZE_SIDE
 		puts "pointer action #{loc.monitor.id} #{loc.desktop.id} #{n.id} resize end"
 	end
-
 	r = get_rectangle(nil, nil, n)
-
 	put "node_geometry #{loc.monitor.id} #{loc.desktop.id} #{loc.node.id} #{r.width} #{r.height} #{r.x} #{r.y}"
-
 	if (pac == ACTION_MOVE && is_tiled(n.client)) || (pac == ACTION_RESIZE_CORNER || pac == ACTION_RESIZE_SIDE && n.client.state == STATE_TILED)
 		f = loc.desktop.root[0]
 		while f
