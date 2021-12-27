@@ -1,3 +1,12 @@
+def state_for_frame(window)
+	s = state_head
+	until s.empty?
+		return state if state.id == window
+		s = s.next
+	end
+	puts "No state found for window #{window}"
+end
+
 def change_ewmh_focus(new_focus, old_focus)
 	return if new_focus == old_focus
 
