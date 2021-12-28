@@ -2,18 +2,46 @@ def handle_event(ev)
 	resp_type = XCB_EVENT_RESPONSE_TYPE(ev)
 	case resp_type
 	when XCB_MAP_REQUEST
+		map_request(ev)
+		break
 	when XCB_DESTROY_NOTIFY
+		destroy_notify(ev)
+		break
 	when XCB_UNMAP_NOTIFY
+		unmap_notify(ev)
+		break
 	when XCB_CLIENT_MESSAGE
+		client_message(ev)
+		break
 	when XCB_CONFIGURE_REQUEST
+		configure_request(ev)
+		break
 	when XCB_PROPERTY_NOTIFY
+		property_notify(ev)
+		break
 	when XCB_ENTER_NOTIFY
+		enter_notify(ev)
+		break
 	when XCB_MOTION_NOTIFY
+		motion_notify(ev)
+		break
 	when XCB_BUTTON_PRESS
+		button_press(ev)
+		break
 	when XCB_FOCUS_IN
+		focus_in(ev)
+		break
 	when XCB_MAPPING_NOTIFY
+		mapping_notify(ev)
+		break
 	when 0
+		process_error(ev)
+		break
 	else
+		if randr && resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY
+			update_monitors
+		end
+		break
 	end
 end
 
@@ -64,7 +92,7 @@ def configure_request(ev)
 			values[i++] = e.stack_mode
 		end
 
-		xcb_configure_window(dpy, e.window, mask, values)
+		xcb_configure_window(conn, e.window, mask, values)
 	else if is_floating(c)
 		width = c.floating_rectangle.width
 		height = c.floating_rectangle.height
@@ -320,10 +348,130 @@ def motion_notify(ev)
 end
 
 def handle_state(m, d, n, state, action)
+	if state == ewmh.NET_WM_STATE_FULLSCREEN
+		if !(action == XCB_EWMH_STATE_ADD && (ignore_ewmh_fullscreen & STATE_TRANSITION_ENTER))
+		else if !(action == XCB_EWMH_WM_STATE_REMOVE && (ignore_ewmh_fullscreen & STATE_TRANSITION_EXIT))
+			if n.client.state == STATE_FULLSCREEN
+				set_state(m, d, n, n.client.last_state)
+			end
+		else if !(action == XCB_EWMH_WM_STATE_TOGGLE)
+			next_state = is_fullscreen(n.client) ? n.client.state.last_name : STATE_FULLSCREEN
+			if !(next_state == STATE_FULLSCREEN && (ignore_ewmh_fullscreen & STATE_TRANSITION_ENTER) ||
+				 next_state != STATE_FULLSCREEN && ignore_ewmh_fullscreen & STATE_TRANSITION_EXIT)
+				set_state(m, d, n, next_state)
+			end
+		end
+		arrange(m, d)
+	else if state == ewmh.NET_WM_STATE_BELOW
+		if action == XCB_EWMH_WM_STATE_ADD
+			state_layer(m, d, n, LAYER_BELOW)
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			if n.client.layer == LAYER_BELOW
+				set_layer(m, d, n, n.client.last_layer)
+			else if action == XCB_EWMH_WM_STATE_TOGGLE
+				set_layer(m, d, n, n.client.layer == LAYER_BELOW ? n.client.last_layer : LAYER_BELOW)
+			end 
+		end
+	else if state == ewmh.NET_WM_STATE_ABOVE
+		if action == XCB_EWMH_WM_STATE_ADD
+			set_layer(m, d, n, LAYER_ABOVE)
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			set_layer(m, d, n, LAYER_ABOVE)
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			set_layer(m, d, n, n.client.layer == LAYER_ABOVE ? n.client.last_layer : LAYER_ABOVE)
+		end
+	else if state == ewmh.NET_WM_STATE_HIDDEN
+		if action == XCB_EWMH_WM_STATE_ADD
+			set_hidden(m, d, n, true)
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			set_hidden(m, d, n, false)
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			set_hidden(m, d, n, !n.hidden)
+		end
+	else if state == ewmh.NET_WM_STATE_STICKY
+		if action == XCB_EWMH_WM_STATE_ADD
+			set_sticky(m, d, n, true)
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			set_sticky(m, d, n, false)
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			set_sticky(m, d, n, !n.sticky)
+		end
+	else if state == ewmh.NET_WM_STATE_DEMANDS_ATTENTION
+		if action == XCB_EWMH_WM_STATE_ADD
+			set_urgent(m, d, n, true)
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			set_urgent(m, d, n, false)
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			set_urgent(m, d, n, !n.clint.urgent)
+		end
+	else if state == ewmh.NET_WM_STATE_MODAL
+		if action == XCB_EWMH_WM_STATE_ADD
+			n.client.wm_flags |= WM_FLAG_MODAL
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			n.client.wm_flags &= ~WM_FLAG_MODAL
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			n.client.wm_flags ^= WM_FLAG_MODAL
+		end
+	else if state == ewmh.NET_WM_STATE_MAXIMIZED_VERT
+		if action == XCB_EWMH_WM_STATE_ADD
+			n.client.wm_flags |= WM_FLAG_MAXIMIZED_VERT
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			n.client.wm_flags &= ~WM_FLAG_MAXIMIZED_VERT
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			n.client.wm_flags ^= WM_FLAG_MAXIMIZED_VERT
+		end
+	else if state == ewmh.NET_WM_STATE_MAXIMIZED_HORZ
+		if action == XCB_EWMH_WM_STATE_ADD
+			n.client.wm_flags |= WM_FLAG_MAXIMIZED_HORZ
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			n.client.wm_flags &= ~WM_FLAG_MAXIMIZED_HORZ
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			n.client.wm_flags ^= WM_FLAG_MAXIMIZED_HORZ
+		end
+	else if state == ewmh.NET_WM_STATE_SHADED
+		if action == XCB_EWMH_WM_STATE_ADD
+			n.client.wm_flags |= WM_FLAG_SHADED
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			n.client.wm_flags &= ~WM_FLAG_SHADED
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			n.client.wm_flags ^= WM_FLAG_SHADED
+		end
+	else if state == ewmh.NET_WM_STATE_SKIP_TASKBAR
+		if action == XCB_EWMH_WM_STATE_ADD
+			n.client.wm_flags |= WM_FLAG_SKIP_TASKBAR
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			n.client.wm_flags &= ~WM_FLAG_SKIP_TASKBAR
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			n.client.wm_flags ^= WM_FLAG_SKIP_TASKBAR
+		end
+	else if state == ewmh.NET_WM_STATE_SKIP_PAGER
+		if action == XCB_EWMH_WM_STATE_ADD
+			n.client.wm_flags |= WM_FLAG_SKIP_PAGER
+		else if action == XCB_EWMH_WM_STATE_REMOVE
+			n.client.wm_flags &= ~WM_FLAG_SKIP_PAGER
+		else if action == XCB_EWMH_WM_STATE_TOGGLE
+			n.client.wm_flags ^= WM_FLAG_SKIP_PAGER
+		end
+	end
 end
 
 def mapping_notify(ev)
+	return if !mapping_events_count
+
+	e = ev
+
+	return if e.request == XCB_MAPPING_POINTER
+
+	if mapping_events_count > 0
+		mapping_events_count -= 1
+	end
+
+	ungrab_buttons
+	grab_buttons
 end
 
 def process_error(ev)
+	e = ev
+	return if e.error_code == ERROR_CODE_BAD_WINDOW
+	puts "Failed request #{xcb_event_get_request_label(e.major_opcode}, #{xcb_event_get_request_label(e.error_code)}: #{e.bad_value}"
 end
