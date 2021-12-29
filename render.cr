@@ -1,23 +1,17 @@
 def render_con(con)
 	params = RenderParams.new(x: con.x, y: con.y, children: con_num_children(con))
-
 	puts "Rendering node #{con} / #{con.name} / #{con.layout} / #{params.children}"
-
 	i = 0
 	con.mapped = true
-
 	if con.window
 		inset = con.window_rect
 		inset = Rect.new(0, 0, con.width, con.height)
 		if con.fullscreen_mode == CF_NONE
 			inset = rect_add(inset, con_border_style_rect(con))
 		end
-
 		inset.width -= 2 * con.border_width
 		inset.height -= 2 * con.border_width
-
 		inset = rect_sanitize_dimensions(inset)
-
 		puts "Child will be at #{inset.x} x #{inset.y} with size #{inset.width} x #{inset.height}"
 	end
 
@@ -35,9 +29,7 @@ def render_con(con)
 	end
 
 	params.deco_height = render_deco_height
-
 	params.sizes = precalculate_sizes(con, pointerof(params))
-
 	if con.layout == L_OUTPUT
 		if con_is_internal(con)
 			return
