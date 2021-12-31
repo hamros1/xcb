@@ -176,36 +176,3 @@ def x_draw_decoration_after_title(con, deco_render_params)
 	x_draw_title_border(con, p)
 end
 
-def x_get_border_rectangle(con, rectangles)
-	count = 0
-	border_style = con_border_style(con)
-	if border_style != BS_NONE && con_is_leaf(con)
-		borders_to_hide = con_adjacent_borders(con) & hide_edge_borders
-		br = con_border_style_rect(con)
-		if borders_to_hide & ADJ_LEFT_SCREEN_EDGE
-			rectangles[count += 1] = Rect.new(
-				x: 0,
-				y: 0,
-				width: br.x,
-				height: con.rect.height
-			)
-		end
-		if !borders_to_hide & ADJ_LOWER_SCREEN_EDGE
-			rectangles[count += 1] = Rect.new(
-				x: br.x,
-				y: con.rect.height + (br.height, br.y),
-				width: con.rect.width + br.width,
-				height: -(br.height + br.y)
-			)
-		end
-		if border_style == BS_PIXEL && !(border_to_hide & ADJ_UPPER_SCREEN_EDGE)
-			rectangles[count += 1] = Rect.new(
-				x: br.x,
-				y: 0,
-				width: con.rect.width + br.width,
-				height: br.y
-			)
-		end
-	end
-	count
-end
