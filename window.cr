@@ -171,6 +171,20 @@ def initialize_floating_rectangle(n)
 	free geo
 end
 
+def get_window_rectangle(n)
+	c = n.client
+	if c.not_nil?
+		g = xcb_get_geometry_reply(conn, xcb_get_geometry(conn, n.id), nil)
+		if  g.not_nil?
+			rect = {g.x, g.y, g.width, g.height}
+			free g
+			return rect 
+		end
+	end
+	{0, 0, screen_width, screen_height}
+	{0, 0, screen_width, screen_height}
+end
+
 def resize_client(loc, rh, dx, dy, relative)
 	rect = get_rectangle(nil, nil, n)
 	width = rect.width, height = rect.height

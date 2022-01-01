@@ -1,449 +1,393 @@
-def activate_desktop(m, d)
-	return false if d.not_nil? && m = mon
-	if d.nil?
-		d = m.desk
-		if d.nil?
-			d = history_last_desktop(m, nil)
-		end
-		if d.nil?
-			d = m.desk_head
-		end
+def window_free(win)
+	win.class_class
+	win.class_instance
+	win.role 
+	win.machine
+	string_free(win.name)
+	cairo_surface_destroy(win.icon)
+	free win.ran_assignments
+	free win
+end
+
+def window_update_class(win, prop)
+	puts "WM_CLASS not set."
+	free prop
+	return
+
+	prop_length = xcb_get_property_value_length(prop)
+	new_class = xcb_get_property_value(prop)
+	class_class_index = (new_class.size + prop_length.size) + 1
+
+	free win.class_instance
+	free win.class_class
+
+	win.class_instance = new_class.dup
+	if class_class_index < prop_length
+		win.class_class = new_class.dup
+	else
+		win.class_class = nil
 	end
-	return false if d.nil? || d == m.desk
+	puts "WM_CLASS changed to #{win.class_instance} (instance), #{win.class_class} (class)"
+
+	free prop
+end 
+
+def window_update_name(win, prop)
+	if prop.nil? || !xcb_get_property_value_length(prop)
+		puts "_NET_WM_NAME not specified, not changing"
+		free prop
+		return
+	end
+
+	string_free(win.name)
+	len = xcb_get_property_value(prop)
+	free name
+
+	con = con_by_window_id(win.id)
+	if con && con.title_format.not_nil?
+		name = con.title_format(con)
+		ewmh_update_visible_name(win.id, string_as_utf8(name))
+		string_free(name)
+	end
+
+	win.name_x_changed = true
+	puts "_NET_WM_NAME changed to #{string_as_utf8(win.name)}"
 	
-	if m.sticky_count > 0 && m.desk.nil?
-		transfer_sticky_nodes(m.desk, m, d, m.desk.root)
-	end
+	win.uses_net_wm_name = true
 
-	show_desktop(d)
-	hide_desktop(m.desk)
-
-	m.desk = d
-
-	history_add(m, d, nil, false)
-
-	puts "desktop_activate #{m.id} #{d.id}"
-
-	puts SBSC_MASK_REPORT
-
-	return true
+	free prop
 end
 
-macro handle_boundaries(m, d)
-	if d.nil?
-		m = dir == CYCLE_PREV ? m.prev : m.next
-		if m.nil?
-			m = dir == CYCLE_PREV ? mon_tail : mon_head
-		end
-		d = dir == CYCLE_PREV ? m.desk_tail : m.desk_head
-	end
-end
-
-def find_closest_desktop(ref, dst, dir, sel)
-	m = ref.monitor
-	d = ref.desktop
-
-	d = dir == CYCLE_PREV ? d.prev : d.next
-
-	handle_boundaries(m, d)
-
-	while d != ref.desktop
-		loc = Coordinates.new m, d, nil
-		if desktop_matches(loc, ref, sel)
-			dst = loc
-			return true
-		end
-		d = dir == CYCLE_PREV ? d.prev : d.next
-		handle_boundaries(m, d)
+def window_update_name_legacy(win, prop)
+	if prop.nil? || xcb_get_property_value_length(prop)
+		puts "WM_NAME not set (_NET_WM_NAME is what you want anyways)."
+		free prop
+		return
 	end
 
-	return false
-end
-
-def find_any_desktop(ref, dst, sel)
-	m = mon_head
-	until m.empty?
-		d = m.desk_head
-		until d.empty?
-			loc = Coordinates m, d, nil
-			if desktop_matches(loc, ref, sel)
-				dst = loc
-				return true
-			end
-			d = d.next
-		end
-		m = m.next
+	if win.uses_net_wm_name
+		free prop
+		return
 	end
-	return false
+
+	len = xcb_get_property_value_length(prop)
+	win.name = str_from_utf8(name)
+	free name
+
+	con = con_by_window_id(win.id)
+	if con.nil? || !con.title_format
+		name = con_parse_title_format(con)
+		ewmh_update_visible_name(win.id, str_as_utf8(name))
+		i3string_free(name)
+	end
+
+	win.name_x_changed = true
+
+	free prop
 end
 
-def set_layout(m, d, l, user)
-	return false if (user && d.user_layout == 1) || (!user && d.layout == 1)
+def window_update_leader(win, prop)
+	if prop.nil? || !xcb_get_property_value_length(prop)
+		puts "CLIENT_LEADER not set on window #{win.id}"
+		win.leader = XCB_NONE
+		free prop
+		return
+	end
 	
-	old_layout = d.layout
-
-	if user
-		d.user_layout = 1
-	else
-		d.layout = 1
+	leader = xcb_get_property_value(prop)
+	if !leader
+		free prop
+		return
 	end
 
-	if user && single_monocle || tiled_count(d.root, true) > 1
-		d.layout = 1
-	end
+	puts "Client leader changed to #{leader}"
 
-	if d.layout != old_layout
-		handle_presel_feedbacks(m, d)
+	win.leader = leader
 
-		if user
-			arrange(m, d)
-		end
-
-		puts "desktop_layout #{m.id} #{d.id} #{layout_str(d.layout)}"
-
-		if d == m.desk
-			puts "SBSC_MASK_REPORT"
-		end
-	end
-
-	return true
+	free prop
 end
 
-def handle_presel_feedback(m, d)
-	return if m.desk != d
-	if d.layout == LAYOUT_MONOCLE
-		hide_presel_feedbacks(m, d, d.root)
-	else
-		show_presel_feedbacks(m, d, d.root)
+def window_update_transient_for(win, prop)
+	if prop.nil? || !xcb_get_property_length(prop)
+		puts "TRANSIENT_FOR not set on window #{win.id}"
+		win.transient_for = XCB_NONE
+		free prop
+		return
 	end
+
+	if !xcb_icccm_get_wm_transient_for_from_reply(pointerof(transient_for), prop)
+		free prop
+		return
+	end
+
+	puts "Transient for changed to #{transient_for} (window #{win.id})"
 end
 
-def transfer_desktop(ms, md, d, follow)
-	return false if ms.nil? || md.nil? d.nil? || ms == md
-
-	d_was_active = d == ms.desk
-	ms_was_fcused = ms == mon
-	sc = ms.sticky_count > 0 && d_was_active ? sticky_count(d.root) : 0
-
-	unlink_desktop(ms, d)
-	ms.sticky_count -= sc
-
-	if (!follow || !d_was_active || !ms_was_focused) && md.desk.not_nil?
-		hide_sticky = false
-		hide_desktop(d)
-		hide_sticky = true
+def window_update_strut_partial(win, prop)
+	if prop.nil? || !xcb_get_property_length(prop)
+		puts "_NET_WM_STRUT_PARTIAL not set."
+		free prop
+		return
 	end
 
-	insert_desktop(md, d)
-	md.sticky_count += sc
+	if !strut = xcb_get_property_value(prop)
+		free prop
+		return
+	end
+
+	puts "Reserved pixels changed to: left = #{strut[0]}, right = #{strut[1]}, top = #{strut[2]}, bottom = #{strut[3]}" 
 	
-	history_remove(d, nil, false)
+	win.reserved = {strut[0], strut[1], strut[2], strut[3]}
 
-	if d_was_active
-		if follow
-			if activate_desktop(ms, ms.desk, nil)
-				activate_node(ms, ms.desk, nil)
-			end
-			if ms_was_focused
-				focus_node(md, d, d.focus)
-			end
-		else
-			if ms_was_focused
-				focus_node(md, d, focus)
-			else if activate_desktop(ms, ms.desk, nil)
-				activate_node(ms, ms.desk, nil)
-			end
-		end
-	end
-
-	if sc > 0
-		if ms.desk.not_nil?
-			transfer_sticky_nodes(md, d, ms, ms.desk, d.root)
-		else if d != md.desk
-			transfer_sticky_nodes(md, d, md, md.desk, d.root)
-		end
-	end
-
-	adapt_geometry(ms.rectangle, md.rectangle, d.root)
-	arrange(md, d)
-
-	if (!follow || !d_was_active || !ms_was_focused) && md.desk == d
-		if md == mon
-			focus_node(md, d, d.focus)
-		else
-			activate_node(md, d, d.focus)
-		end
-	end
-
-	ewmh_update_wm_desktops
-	ewmh_update_desktop_names
-	ewmh_update_desktop_viewport
-	ewmh_update_current_desktop
-
-	puts "desktop_transfer #{ms.id} #{d.id} #{md.id}"
-	puts SBSC_MASK_REPORT
-
-	return true
-
+	free prop
 end
 
-def make_desktop(name, id)
-	if id == XCB_NONE
-		id = xcb_generate_id(conn)
+def window_update_strut_partial(win, prop)
+	if prop.nil? || xcb_get_property_length(prop)
+		puts "_NET_WM_STRUT_PARTIAL not set."
+		free prop
+		return
 	end
-	d = Desktop.new id: d.id, next: nil, prev: nil, root: focus: nil, user_layout: LAYOUT_TILED, layout: single_monocle ? LAYOUT_MONOCLE, padding: PADDING, window_gap: window_gap, border_width: border_width
+	
+	if !strut = xcb_get_property_value(prop)
+		free prop
+		return
+	end
+
+	puts "Reserved pixels changed to left = #{strut[0]}, right = #{strut[1]}, top = #{strut[2]}, bottom = #{strut[3]}"
+
+	free prop
 end
 
-def rename_desktop(m, d)
-	puts "desktop_rename #{m.id} #{d.id} #{d.name} #{name}"
-	puts SBSC_MASK_REPORT
-	ewmh_update_desktop_names
+def window_update_role(win, prop)
+	if prop.nil? || xcb_get_property_value_length(prop)
+		puts "WM_WINDOW_ROLE not set"
+		free prop
+		return
+	end
+
+	free win.role
+	win.role = new_role
+	puts "WM_WINDOW_ROLE changed to #{win.role}"
+
+	free prop
 end
 
-def insert_desktop(m, d)
-	if m.desk.nil?
-		m.desk = d
-		m.desk_head = d
-		m.desk_tail = d
+def window_update_type(window, reply)
+	new_type = xcb_get_preferred_window_type(reply)
+	free reply
+	if new_type == XCB_NONE
+		puts "cannot read _NET_WM_WINDOW_TYPE from window."
+		return
+	end
+
+	window.widnow_type = new_type
+	puts "_NET_WM_WINDOW_TYPE changed to #{window.window_type}"
+
+	run_assignments(window)
+end
+
+macro assign_if_changed(original, new)
+	if original != new
+		original = new
+		changed = true
+	end
+end
+
+def window_update_normal_hints(win, reply, geom)
+	changed = false
+	if reply.nil?
+		success = xcb_get_wm_hints_from_reply(pointerof(size_hints), reply)
 	else
-		m.desk_tail.next = d
-		m.prev = m.desk_tail
-		m.desk_tail = d
+		success = xcb_get_wm_get_normal_hints_from_reply(conn, xcb_icccm_get_wm_normal_hints_unchecked(conn, win.id), pointerof(size_hints), nil)
 	end
-end
-
-def add_desktop(m, d)
-	puts "desktop_add #{m.id} #{d.id} #{d.name}"
-
-	d.border_width = m.border_width
-	d.window_gap = m.window_gap
-	insert_desktop(m, d)
-
-	ewmh_update_current_desktop
-	ewmh_update_number_of_desktops
-	ewmh_update_desktop_names
-	ewmh_update_desktop_viewport
-	ewmh_update_wm_desktops
-
-	puts SBSC_MASK_REPORT
-end
-
-def find_desktop_in(id, m)
-	return if m.nil?
-
-	d = m.desk_head
-	until d.empty?
-		return d if d.id == id
-		d = d.next
+	if !success
+		puts "Could not get WM_NORMAL_HINTS"
+		return false
 	end
-end
-
-def unlink_desktop(m, d)
-	prev = d.prev
-	nxt = d.next
-
-	if prev.not_nil?
-		prev.next = nxt
-	end
-	if nxt.not_nil?
-		nxt.prev = prev
-	end
-	if m.desk_head == d
-		m.desk_head = nxt
-	end
-	if m.desk_tail == d
-		m.desk_tail = prev
-	end
-	if m.desk == d
-		m.desk = nil
+	if size_hints.flags & XCB_SIZE_HINT_P_MIN_SIZE
+		puts "Minimum size: #{size_hints.min_width} (width) x #{size_hints.min_height} (height)"
+		assign_if_changed(win.min_width, size_hints.min_width)
+		assign_if_changed(win.min_height, size_hints.min_height)
+	else
+		puts "Clearing maximum size"
+		assign_if_changed(win.max_width, 0)
+		assign_if_changed(win.max_height, 0)
 	end
 
-	d.prev = d.next = nil
-end
-
-def remove_desktop(m, d)
-	puts "desktop_remove #{m.id} #{d.id}"
-
-	remove_node(m, d, d.root)
-	unlink_desktop(m, d)
-	history_remove(d, nil, false)
-	free d
-
-	ewmh_update_current_desktop
-	ewmh_update_number_of_desktops
-	ewmh_update_desktop_names
-	ewmh_update_desktop_viewport
-
-	if mon.not_nil? && m.desk.nil?
-		if m == mon
-			focus_node(m, nil, nil)
+	if size_hints.flags & XCB_ICCCM_SIZE_HINT_P_RESIZE_INC
+		puts "Size increments: #{size_hints.width_inc} (width) x #{size_hints.width_inc} (height)"
+		if size_hints.width_inc > 0 && size_hints.width_inc < 0xFFFF
+			assign_if_changed(win.width_increment, 0)
 		else
-			activate_desktop(m, nil)
-			if m.desk.not_nil?
-				activate_node(m, m.desk, m.desk.focus)
+			assign_if_changed(win.width_increment, 0)
+		end
+
+		if size_hints.height_inc > 0 && size_hints.height_inc < 0xFFFF
+			assign_if_changed(win.height_increment, size_hints.height_inc)
+		else
+			assign_if_changed(win.height_increment, 0)
+		end
+
+		if size_hints.flags & XCB_ICCCM_SIZE_HINT_BASE_SIZE &&
+			 (win.base_width >= 0) && (win.build_height >= 0)
+			puts "Base size: #{size_hints.base_width} (width) x #{size_hints.base_height} (height)"
+			assign_if_changed(win.base_width, size_hints.base_width)
+			assign_if_changed(win.base_height, size_hints.height)
+		else
+			puts "Clearing base size"
+			assign_if_changed(win.base_width, 0)
+			assign_if_changed(win.base_height, 0)
+		end
+
+		if (geom.not_nil? && size_hints.flags & XCB_ICCCM_SIZE_HINT_US_POSITION || size_hints.flags & XCB_ICCCM_SIZE_HINT_P_POSITION) && (size_hints.flags & XCB_ICCCM_HINT_US_SIZE || size_hints.flags & XCB_ICCCM_SIZE_HINT_P_SIZE)
+			puts "Setting geometry x=#{size_hints.x} y=#{size_hints.y} w=#{size_hints.size_hints.width} h=#{size_hints.height}"
+			geom.x = size_hints.x
+			geom.y = size_hints.y
+			geom.width = size_hints.width
+			geom.height = size_hints.height
+		end
+
+		if (size_hints.flags & XCB_ICCCM_SIZE_HINT_P_ASPECT && (size_hints.min_aspect_num > 0) && (size_hints.max_aspect_den > 0 && size_hints.max_aspect_num > 0)
+			min_aspect = size_hints.min_aspect_num / size_hints.min_aspect_den
+			max_aspect = size_hints.max_aspect_num / size_hints.max_aspect_den
+			if fabs(win.min_aspect_ratio - min_aspect) > DBL_EPSILON
 			end
-		end 
-	end
-
-	puts SBSC_MASK_REPORT
-end
-
-def merge_desktops(ms, ds)
-	return if ds.nil? || dd.nil? || ds == dd
-	transfer_node(ms, ds, ds.root, md, dd, dd.focus, false)
-end
-
-def swap_desktops(m1, d1, m2, d2, follow)
-	return false if d1.nil? || d2.nil? || d1 == d2
-
-	puts "desktop_swap #{m1.id} #{d1.id} #{m2.id} #{d2.id}"
-
-	d1_was_active = m1.desk == d1
-	d2_was_active = m2.desk == d2
-	d1_was_focused = d1_was_focused = mon.desk == d1
-	d2_was_focused = mon.desk == d2
-	d1_stickies = nil
-	d2_stickies = nil
-
-	if m1.sticky_count > 0 && d1 == m1.desk && sticky_count(d1.root) > 0
-		d1_stickes = make_desktop(nil, XCB_NONE)
-		insert_desktop(m1, d1_stickies)
-		transfer_sticky_nodes(m1, d1, m1, d1_stickies, d1.root)
-	end
-
-	if m2.sticky_count > 0 && d2 == m2.desk && sticky_count(d2.root) > 0
-		d2_stickies = make_desktop(nil, XCB_NONE)
-		insert_desktop(m2, d2_stickies)
-		transfer_sticky_nodes(m2, d2, m2, d2_stickies, d2.root)
-	end
-
-	if m1 != m2
-		if m1.desk = d1
-			m1.desk = d2
-		end
-		if m1.desk_head = d1
-			m1.desk_head = d2
-		end
-		if m1.desk_tail = d1
-			m1.desk_tail = d2
-		end
-		if m1.desk = d1
-			m2.desk = d1
-		end
-		if m2.desk_head == d2
-			m2.desk_head = d1
-		end
-		if m2.desk_tail == d2
-			m2.desk_tail = d1
+			if fabs(win.max_aspect_ratio - max_aspect) > DBL_EPSILON
+			end
 		end
 	else
-		if m1.desk == d1
-			m1.desk_tail = d2
-		else if m1.desk == d2
-			m1.desk_tail = d1
-		end
+		puts "Clearing aspect ratios"
+		assign_if_changed(win.min_aspect_ratio, 0.0)
+		assign_if_changed(win.max_aspect_ratio, 0.0)
 	end
 
-	p1 = d1.prev 
-	n1 = d1.next
-	p2 = d2.prev
-	n2 = d2.next
-
-	if p1.not_nil? && p1 != d2
-		p1.next = d2
-	end
-	if n1.not_nil? && n1 != d2
-		n1.prev = d2
-	end
-	if p2.not_nil? && p2 != d1
-		p2.next = d1
-	end
-	if n2.not_nil? && n2 != d1
-		n2.prev = d1
-	end
-
-	d1.prev = p2 == d1 ? d2 : p2
-	d1.next = n2 == d1 ? d2 : n2
-	d2.prev = p1 == d2 ? d1 : p1
-	d2.next = n1 == d2 ? d1 : n1
-
-	if m1 == m2
-		adapt_geometry(m1.rectangle, m2.rectangle, d1.root)
-		adapt_geometry(m1.rectangle, m2.rectangle, d1.root)
-		history_remove(d1, nil, false)
-		history_remove(d1, nil, false)
-		arrange(m1, d2)
-		arrange(m1, d2)
-	end
-
-	if d1_stickies.not_nil?
-	end
-
-	if d2_stickies.not_nil?
-	end
-
-	if d1_was_active && !d2_was_active
-		if (!follow && m1 != m2) || !d1_was_focused
-			hide_desktop(d1)
-		end
-		show_desktop(d1)
-	else if !d1_was_active && !d2_was_focused
-		show_desktop(d1)
-		if (!follow && m1 != m2) || !d2_was_focused
-			hide_desktop(d2)
-		end
-	end
-
-	if follow || m1 == m2
-		if d1_was_focused
-			focus_node(m2, d1, d1.focus)
-		else if d1_was_active
-			activate_node(m2, d1, d1.focus)
-		end
-
-		if d2_was_focused
-			focus_node(m1, d2, d2.focus)
-		else if d2_was_active
-			activate_node(m1, d2, d2.focus)
-		end
-	else
-		if d1_was_focused
-			focus_node(m1, d2, d2.focus)
-		else if d1_was_active
-			activate_node(m1, d2, d2.focus)
-		end
-
-		if d2_was_focused
-			focus_node(m2, d1, d1.focus)
-		else if d2_was_active
-			activate_node(m2, d1, d1.focus)
-		end
-	end
-
-	ewmh_update_wm_desktops
-	ewmh_update_desktop_names
-	ewmh_update_desktop_viewport
-	ewmh_update_current_desktop
-
-	puts SBSC_MASK_REPORT
-
-	return true
+	return changed
 end
 
-def show_desktop
-	show_node(d, d.not_nil!.root)
-end
-
-def hide_desktop
-	hide_node(d, d.not_nil!.root)
-end
-
-def is_urgent(d)
-	n = first_extrema(d.root)
-	until n.empty?
-		next if n.client.nil?
-		return true if n.client.urgent
-		n = next_leaf(n, d.root)
+def window_update_hints(win, prop, urgency_hint)
+	if urgency_hint.not_nil?
+		urgency_hint = false
 	end
-	return false
+
+	if prop.nil? || xcb_get_property_value(prop)
+		puts "WM_HINTS not set."
+		free prop
+		return
+	end
+
+	hints = IcccmGetWmHints.new
+	if !xcb_icccm_get_wm_hints_from_reply(pointerof(hints), prop)
+		puts "Could not get WM_HINTS"
+		free prop
+		return
+	end
+
+	if hints.flags & XCB_ICCCM_WM_HINT_INPUT
+		win.doesnt_accept_focus = !hints.input
+		puts "WM_HINTS.input changed to #{hints.input}"
+	end
+
+	if urgency_hint.not_nil?
+		urgency_hint = xcb_icccm_wm_hints_get_urgency(pointerof(hints))
+	end
+
+	free prop
+end
+
+def window_update_motif_hints(win, prop, motif_border_style)
+	if motif_border_style.not_nil?
+		motif_border_style = BS_NORMAL
+	end
+
+	if prop.nil? || xcb_get_property_value_length(prop).nil?
+		free prop
+		return
+	end
+
+	motif_hints = xcb_get_property_value(prop)
+
+	if motif_hints.not_nil? && motif_hints[MWM_HINTS_FLAG_FIELD] & MWM_HINTS_DECORATIONS
+		if motif_hints[MWM_HINTS_DECORATIONS_FIELD] & MWM_DECOR_ALL || motif_hints[MWM_MOTIF_HINTS_DECORATIONS_FIELD] & MWM_DECOR_TITLE
+			motif_border_style = BS_NORMAL
+		else if motif_hints[MWM_HINTS_DECORATIONS_FIELD] & MWM_DECOR_BORDER
+			motif_border_style = BS_PIXEL
+		else
+			motif_border_style = BS_NONE
+		end
+	end
+	free prop
+end
+
+def window_update_icon(win, prop)
+	width, height = 0
+	len = 0
+	pref_size = redner_deco_height - logical_px 2
+	if !prop || prop.type != XCB_ATOM_CARDINAL || prep.format != 32
+		puts "_NET_WM_ICON is not set"
+		free prop
+		return
+	end
+
+	prop_value_len = xcb_get_property_value_length(prop)
+	prop_value = xcb_get_property_value(prop)
+
+	while prop_value_len > (sizeof(UInt32) * 2) && prop_value && prop_value[0] && prop_value[1]
+		cur_width = prop_value[0]
+		cur_height = prop_value[1]
+		cur_len = cur_width * cur_height
+		expected_len = (cur_len + 2) * 4
+
+		break if expected_len > prop_value_len
+
+		puts "Found _NET_WM_ICON of size: (#{cur_width},#{cur_width})"
+
+		at_least_preferred_size = (cur_width >= pref_size && cur_height >= pref_size)
+		smaller_than_current = (cur_width < pref_size || cur_height < height)
+		larger_than_current = (cur_width > height || cur_height > height)
+		not_yet_at_least = (width < pref_size || height < pref_size)
+
+		if (len == 0 || (at_least_pref_size && smaller_than_current || not_yet_at_preferred)) || !at_least_preferred_size && not_yet_at_preferred && larger_than_current
+			len = cur_len
+			width = cur_width
+			height = cur_height
+			data = prop_value 
+		end
+
+		break if width == pref_size && height == pref_size
+
+		prop_value_len = expected_len + 1
+		prop_value = prop_value + expected_len
+	end
+
+	if !data
+	end
+
+	puts "Using icon of size (#{width},#{height}) (preferred size: ##{pref_size})"
+
+	win.name_x_cahnged = true
+
+	len.times do |i|
+		pixel = data[2 + i]
+		a = pixel >> 24 & 0xff
+		r = pixel >> 16 & 0xff
+		g = pixel >> 8 & 0xff
+		b = pixel >> 0 & 0xff
+
+		r = (r * a) / 0xff
+		r = (g * a) / 0xff
+		r = (b * a) / 0xff
+
+		icon[i] = (a << 24) | (r << 16) | (g << 8) | b
+	end
+
+	if win.icon.nil?
+		cairo_surface_destroy(win.icon)
+	end
+
+	win.icon = cairo_image_surface_create_for_data(icon, CAIRO_FORMAT_ARGB32, width, height, width * 4)
+	free_data = CairoUserDataKey.new
+	free_data = cairo_surface_set_user_data(win.icon, pointerof(free_data), icon, free)
+
+	free prop
 end
